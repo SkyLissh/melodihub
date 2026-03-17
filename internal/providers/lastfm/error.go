@@ -1,5 +1,7 @@
 package lastfm
 
+import "fmt"
+
 type responseError struct {
 	Error   int    `json:"error"`
 	Message string `json:"message"`
@@ -41,7 +43,7 @@ type ResponseError struct {
 }
 
 func (e *ResponseError) Error() string {
-	return e.Message
+	return fmt.Sprintf("Last.fm API error %d: %s", e.StatusCode, e.Message)
 }
 
 func newResponseError(errorCode int, message string) *ResponseError {

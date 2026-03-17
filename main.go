@@ -7,10 +7,10 @@ import (
 	"github.com/skylissh/melodihub/internal/routes"
 )
 
-// @title Melodi Metadata API
-// @version 1.0
-// @description This is an api REST for the metadata plugin for Melodi
-// @host localhost:3000
+// @title			Melodi Metadata API
+// @version		1.0
+// @description	This is an api REST for the metadata plugin for Melodi
+// @host			localhost:3000
 func main() {
 	e := echo.New()
 

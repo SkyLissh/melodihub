@@ -2,3 +2,4 @@ vendor
 tmp
 .air.toml
 docs
+.env

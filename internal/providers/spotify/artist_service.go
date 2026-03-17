@@ -17,14 +17,14 @@ type GetArtistAlbumsOptions struct {
 type SpotifyArtist interface {
 	GetArtist(id string) (*Artist, error)
 
-	GetManyArtist(ids []string) (*[]Artist, error)
+	GetManyArtist(ids []string) ([]Artist, error)
 
 	GetAlbums(
 		id string,
 		options *GetArtistAlbumsOptions,
 	) (*Paginated[AlbumSimple], error)
 
-	GetTopTracks(id string, market string) (*[]Track, error)
+	GetTopTracks(id string, market string) ([]Track, error)
 }
 
 type spotifyArtist struct {
@@ -47,13 +47,13 @@ func (s *spotifyArtist) GetArtist(id string) (*Artist, error) {
 	return artist, nil
 }
 
-func (s *spotifyArtist) GetManyArtist(ids []string) (*[]Artist, error) {
-	artists := &[]Artist{}
+func (s *spotifyArtist) GetManyArtist(ids []string) ([]Artist, error) {
+	artists := []Artist{}
 	client := s.provider.client
 
 	_, err := client.R().
 		SetQueryParam("ids", strings.Join(ids, ",")).
-		SetResult(artists).
+		SetResult(&artists).
 		Get("artists")
 
 	if err != nil {
@@ -91,14 +91,14 @@ func (s *spotifyArtist) GetAlbums(
 	return result, nil
 }
 
-func (s *spotifyArtist) GetTopTracks(id string, market string) (*[]Track, error) {
+func (s *spotifyArtist) GetTopTracks(id string, market string) ([]Track, error) {
 	client := s.provider.client
-	tracks := &[]Track{}
+	tracks := []Track{}
 
 	_, err := client.R().
 		SetPathParam("id", id).
 		SetQueryParam("market", market).
-		SetResult(tracks).
+		SetResult(&tracks).
 		Get("artists/{id}/top-tracks")
 
 	if err != nil {

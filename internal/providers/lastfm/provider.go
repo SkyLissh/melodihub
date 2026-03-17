@@ -33,7 +33,7 @@ func New(apiKey string) *LastfmProvider {
 
 		endpoint := strings.ReplaceAll(newURL.Path, "/2.0/", "")
 
-		newURL.Path = "/2.0/"
+		newURL.Path = ""
 
 		q := newURL.Query()
 		q.Set("api_key", l.APIKey)
@@ -47,16 +47,16 @@ func New(apiKey string) *LastfmProvider {
 	})
 
 	l.client.AddResponseMiddleware(func(ctx *resty.Client, res *resty.Response) error {
-		if res.IsError() {
-			return nil
-		}
-
 		apiErr := &responseError{}
 		if err := json.Unmarshal(res.Bytes(), apiErr); err != nil {
-			return nil
+			return nil // non-JSON response, not an API error
 		}
 
-		return newResponseError(apiErr.Error, apiErr.Message)
+		if apiErr.Error != 0 {
+			return newResponseError(apiErr.Error, apiErr.Message)
+		}
+
+		return nil
 	})
 
 	l.Track = &lastfmTrack{provider: l}

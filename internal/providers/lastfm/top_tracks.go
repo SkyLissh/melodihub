@@ -6,34 +6,24 @@ type ArtistSimple struct {
 	URL  string `json:"url"`
 }
 
-type Streamable struct {
-	Text string `json:"#text"`
-	Full int    `json:"fulltrack"`
-}
-
 type Track struct {
-	Name       string       `json:"name"`
-	Duration   int          `json:"duration"`
-	Mbid       string       `json:"mbid"`
-	URL        string       `json:"url"`
-	Streamable Streamable   `json:"streamable"`
-	Artist     ArtistSimple `json:"artist"`
-	Listeners  int          `json:"listeners"`
+	Name      string       `json:"name" validate:"required"`
+	Duration  int          `json:"duration,string,omitempty"`
+	Mbid      string       `json:"mbid"`
+	URL       string       `json:"url"`
+	Artist    ArtistSimple `json:"artist"`
+	Listeners int          `json:"listeners,string"`
 }
 
 type TopTracskAttr struct {
 	Country    string `json:"country"`
-	Page       int    `json:"page"`
-	PerPage    int    `json:"perPage"`
-	TotalPages int    `json:"totalPages"`
-	Total      int    `json:"total"`
-}
-
-type TrackContainer struct {
-	Tracks   []Track       `json:"track"`
-	PageInfo TopTracskAttr `json:"@attr"`
+	Page       int    `json:"page,string"`
+	PerPage    int    `json:"perPage,string"`
+	TotalPages int    `json:"totalPages,string"`
+	Total      int    `json:"total,string"`
 }
 
 type TopTracks struct {
-	TopTracks TrackContainer `json:"toptracks"`
+	Tracks   []Track       `json:"track" validate:"required,dive"`
+	PageInfo TopTracskAttr `json:"@attr"`
 }
