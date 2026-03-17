@@ -88,7 +88,7 @@ func (h artistHandler) GetArtist(c *echo.Context) error {
 		c.Logger().Error("Cache get failed", "error", err)
 	}
 
-	deezerArtist, err := p.Deezer.Artist.GetByID(strings.TrimPrefix(id, "deezer:"))
+	deezerArtist, err := p.Deezer.Artist.GetByID(ctx, strings.TrimPrefix(id, "deezer:"))
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, model.APIError{
 			Message: "Failed to fetch artist from Deezer",
@@ -97,7 +97,7 @@ func (h artistHandler) GetArtist(c *echo.Context) error {
 	}
 
 	// Use errgroup to fetch Last.fm artist details, top tracks, and top albums concurrently
-	g1, _ := errgroup.WithContext(ctx)
+	g1, g1Ctx := errgroup.WithContext(ctx)
 	g1.SetLimit(5)
 
 	lastfmArtist := &lastfm.ArtistDetail{}
@@ -105,7 +105,7 @@ func (h artistHandler) GetArtist(c *echo.Context) error {
 	lastfmTopAlbums := make([]lastfm.Album, 0, 15)
 
 	g1.Go(func() error {
-		detail, err := p.Lastfm.Artist.GetDetail(deezerArtist.Name)
+		detail, err := p.Lastfm.Artist.GetDetail(g1Ctx, deezerArtist.Name)
 		if err != nil {
 			return err
 		}
@@ -115,7 +115,7 @@ func (h artistHandler) GetArtist(c *echo.Context) error {
 	})
 
 	g1.Go(func() error {
-		tracks, err := p.Lastfm.Artist.GetTopTracks(deezerArtist.Name, 10)
+		tracks, err := p.Lastfm.Artist.GetTopTracks(g1Ctx, deezerArtist.Name, 10)
 		if err != nil {
 			return err
 		}
@@ -125,7 +125,7 @@ func (h artistHandler) GetArtist(c *echo.Context) error {
 	})
 
 	g1.Go(func() error {
-		albums, err := p.Lastfm.Artist.GetTopAlbums(deezerArtist.Name, 15)
+		albums, err := p.Lastfm.Artist.GetTopAlbums(g1Ctx, deezerArtist.Name, 15)
 
 		if err != nil {
 			return err
@@ -142,7 +142,7 @@ func (h artistHandler) GetArtist(c *echo.Context) error {
 		})
 	}
 
-	g2, _ := errgroup.WithContext(ctx)
+	g2, g2Ctx := errgroup.WithContext(ctx)
 	g2.SetLimit(5)
 
 	similar := make([]model.SimpleArtist, len(lastfmArtist.Similar.Artists))
@@ -151,7 +151,7 @@ func (h artistHandler) GetArtist(c *echo.Context) error {
 
 	// Fetch Deezer search results for the artist to find matching tracks and albums
 	g2.Go(func() error {
-		result, err := p.Deezer.Search.Find(deezerArtist.Name, 50)
+		result, err := p.Deezer.Search.Find(g2Ctx, deezerArtist.Name, 50)
 		if err != nil {
 			return err
 		}
@@ -208,7 +208,7 @@ func (h artistHandler) GetArtist(c *echo.Context) error {
 		g2.Go(func() error {
 			i, a := i, a // capture loop variables
 
-			result, err := p.Deezer.Search.Find(a.Name, 1)
+			result, err := p.Deezer.Search.Find(g2Ctx, a.Name, 1)
 			if err != nil {
 				return err
 			}

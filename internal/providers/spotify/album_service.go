@@ -1,18 +1,21 @@
 package spotify
 
+import "context"
+
 type SpotifyAlbum interface {
-	GetAlbum(id string, market string) (*Album, error)
+	GetAlbum(ctx context.Context, id string, market string) (*Album, error)
 }
 
 type spotifyAlbum struct {
 	provider *SpotifyProvider
 }
 
-func (s *spotifyAlbum) GetAlbum(id string, market string) (*Album, error) {
+func (s *spotifyAlbum) GetAlbum(ctx context.Context, id string, market string) (*Album, error) {
 	client := s.provider.client
 	album := &Album{}
 
 	_, err := client.R().
+		SetContext(ctx).
 		SetPathParam("id", id).
 		SetQueryParam("market", market).
 		SetResult(album).

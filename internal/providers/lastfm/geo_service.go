@@ -1,14 +1,15 @@
 package lastfm
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/go-playground/validator/v10"
 )
 
 type LastfmGeo interface {
-	GetTopArtists(country string, limit int, page int) ([]Artist, error)
-	GetTopTracks(country string, limit int, page int) ([]Track, error)
+	GetTopArtists(ctx context.Context, country string, limit int, page int) ([]Artist, error)
+	GetTopTracks(ctx context.Context, country string, limit int, page int) ([]Track, error)
 }
 
 type lastfmGeo struct {
@@ -16,6 +17,7 @@ type lastfmGeo struct {
 }
 
 func (l *lastfmGeo) GetTopArtists(
+	ctx context.Context,
 	country string,
 	limit int,
 	page int,
@@ -24,6 +26,7 @@ func (l *lastfmGeo) GetTopArtists(
 	result := TopArtists{}
 
 	_, err := client.R().
+		SetContext(ctx).
 		SetQueryParams(map[string]string{
 			"country": country,
 			"limit":   fmt.Sprintf("%d", limit),
@@ -40,6 +43,7 @@ func (l *lastfmGeo) GetTopArtists(
 }
 
 func (l *lastfmGeo) GetTopTracks(
+	ctx context.Context,
 	country string,
 	limit int,
 	page int,
@@ -50,6 +54,7 @@ func (l *lastfmGeo) GetTopTracks(
 	}{}
 
 	_, err := client.R().
+		SetContext(ctx).
 		SetQueryParams(map[string]string{
 			"country": country,
 			"limit":   fmt.Sprintf("%d", limit),

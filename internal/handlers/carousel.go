@@ -2,7 +2,6 @@
 package handlers
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -68,13 +67,13 @@ func (h *carouselHandler) GetCarousels(c *echo.Context) error {
 		c.Logger().Error("Cache get failed", "error", err)
 	}
 
-	g1, _ := errgroup.WithContext(c.Request().Context())
+	g1, g1Ctx := errgroup.WithContext(ctx)
 
 	lastfmTopArtists := make([]lastfm.Artist, 0, 10)
 	lastfmTopTracks := make([]lastfm.Track, 0, 10)
 
 	g1.Go(func() error {
-		result, err := p.Lastfm.Geo.GetTopArtists(country, 10, 1)
+		result, err := p.Lastfm.Geo.GetTopArtists(g1Ctx, country, 10, 1)
 		if err != nil {
 			return err
 		}
@@ -84,7 +83,7 @@ func (h *carouselHandler) GetCarousels(c *echo.Context) error {
 	})
 
 	g1.Go(func() error {
-		result, err := p.Lastfm.Geo.GetTopTracks(country, 10, 1)
+		result, err := p.Lastfm.Geo.GetTopTracks(g1Ctx, country, 10, 1)
 		if err != nil {
 			return err
 		}
@@ -100,7 +99,7 @@ func (h *carouselHandler) GetCarousels(c *echo.Context) error {
 		})
 	}
 
-	g, _ := errgroup.WithContext(context.Background())
+	g, gCtx := errgroup.WithContext(ctx)
 	g.SetLimit(5)
 
 	deezerArtists := make([]deezer.SearchResult, len(lastfmTopArtists))
@@ -110,7 +109,7 @@ func (h *carouselHandler) GetCarousels(c *echo.Context) error {
 		g.Go(func() error {
 			i, artist := i, artist // capture loop variables
 
-			deezerArtist, err := p.Deezer.Search.Find(artist.Name, 10)
+			deezerArtist, err := p.Deezer.Search.Find(gCtx, artist.Name, 10)
 			if err != nil {
 				return err
 			}
@@ -121,7 +120,7 @@ func (h *carouselHandler) GetCarousels(c *echo.Context) error {
 
 	for i, track := range lastfmTopTracks {
 		g.Go(func() error {
-			deezerTrack, err := p.Deezer.Search.Find(track.Name, 10)
+			deezerTrack, err := p.Deezer.Search.Find(gCtx, track.Name, 10)
 			if err != nil {
 				return err
 			}

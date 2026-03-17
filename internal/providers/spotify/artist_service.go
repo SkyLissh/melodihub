@@ -1,6 +1,7 @@
 package spotify
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -15,27 +16,22 @@ type GetArtistAlbumsOptions struct {
 }
 
 type SpotifyArtist interface {
-	GetArtist(id string) (*Artist, error)
-
-	GetManyArtist(ids []string) ([]Artist, error)
-
-	GetAlbums(
-		id string,
-		options *GetArtistAlbumsOptions,
-	) (*Paginated[AlbumSimple], error)
-
-	GetTopTracks(id string, market string) ([]Track, error)
+	GetArtist(ctx context.Context, id string) (*Artist, error)
+	GetManyArtist(ctx context.Context, ids []string) ([]Artist, error)
+	GetAlbums(ctx context.Context, id string, options *GetArtistAlbumsOptions) (*Paginated[AlbumSimple], error)
+	GetTopTracks(ctx context.Context, id string, market string) ([]Track, error)
 }
 
 type spotifyArtist struct {
 	provider *SpotifyProvider
 }
 
-func (s *spotifyArtist) GetArtist(id string) (*Artist, error) {
+func (s *spotifyArtist) GetArtist(ctx context.Context, id string) (*Artist, error) {
 	artist := &Artist{}
 	client := s.provider.client
 
 	_, err := client.R().
+		SetContext(ctx).
 		SetPathParam("id", id).
 		SetResult(artist).
 		Get("artists/{id}")
@@ -47,11 +43,12 @@ func (s *spotifyArtist) GetArtist(id string) (*Artist, error) {
 	return artist, nil
 }
 
-func (s *spotifyArtist) GetManyArtist(ids []string) ([]Artist, error) {
+func (s *spotifyArtist) GetManyArtist(ctx context.Context, ids []string) ([]Artist, error) {
 	artists := []Artist{}
 	client := s.provider.client
 
 	_, err := client.R().
+		SetContext(ctx).
 		SetQueryParam("ids", strings.Join(ids, ",")).
 		SetResult(&artists).
 		Get("artists")
@@ -64,6 +61,7 @@ func (s *spotifyArtist) GetManyArtist(ids []string) ([]Artist, error) {
 }
 
 func (s *spotifyArtist) GetAlbums(
+	ctx context.Context,
 	id string,
 	options *GetArtistAlbumsOptions,
 ) (*Paginated[AlbumSimple], error) {
@@ -75,6 +73,7 @@ func (s *spotifyArtist) GetAlbums(
 	result := &Paginated[AlbumSimple]{}
 
 	_, err := client.R().
+		SetContext(ctx).
 		SetPathParam("id", id).
 		SetPathParams(map[string]string{
 			"limit":  fmt.Sprintf("%d", limit),
@@ -91,11 +90,12 @@ func (s *spotifyArtist) GetAlbums(
 	return result, nil
 }
 
-func (s *spotifyArtist) GetTopTracks(id string, market string) ([]Track, error) {
+func (s *spotifyArtist) GetTopTracks(ctx context.Context, id string, market string) ([]Track, error) {
 	client := s.provider.client
 	tracks := []Track{}
 
 	_, err := client.R().
+		SetContext(ctx).
 		SetPathParam("id", id).
 		SetQueryParam("market", market).
 		SetResult(&tracks).

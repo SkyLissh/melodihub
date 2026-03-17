@@ -1,27 +1,29 @@
 package lastfm
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/go-playground/validator/v10"
 )
 
 type LastfmArtist interface {
-	GetSimilar(name string, limit int) ([]Artist, error)
-	GetDetail(name string) (*ArtistDetail, error)
-	GetTopTracks(name string, limit int) (*TopTracks, error)
-	GetTopAlbums(name string, limit int) (*TopAlbum, error)
+	GetSimilar(ctx context.Context, name string, limit int) ([]Artist, error)
+	GetDetail(ctx context.Context, name string) (*ArtistDetail, error)
+	GetTopTracks(ctx context.Context, name string, limit int) (*TopTracks, error)
+	GetTopAlbums(ctx context.Context, name string, limit int) (*TopAlbum, error)
 }
 
 type lastfmArtist struct {
 	provider *LastfmProvider
 }
 
-func (l *lastfmArtist) GetSimilar(name string, limit int) ([]Artist, error) {
+func (l *lastfmArtist) GetSimilar(ctx context.Context, name string, limit int) ([]Artist, error) {
 	client := l.provider.client
 	result := SimilarArtists{}
 
 	_, err := client.R().
+		SetContext(ctx).
 		SetQueryParams(map[string]string{
 			"artist": name,
 			"limit":  fmt.Sprintf("%d", limit),
@@ -36,13 +38,14 @@ func (l *lastfmArtist) GetSimilar(name string, limit int) ([]Artist, error) {
 	return result.SimilarArtists.Artists, nil
 }
 
-func (l *lastfmArtist) GetDetail(name string) (*ArtistDetail, error) {
+func (l *lastfmArtist) GetDetail(ctx context.Context, name string) (*ArtistDetail, error) {
 	client := l.provider.client
 	result := struct {
 		Artist ArtistDetail `json:"artist"`
 	}{}
 
 	_, err := client.R().
+		SetContext(ctx).
 		SetQueryParams(map[string]string{
 			"artist": name,
 		}).
@@ -56,13 +59,14 @@ func (l *lastfmArtist) GetDetail(name string) (*ArtistDetail, error) {
 	return &result.Artist, nil
 }
 
-func (l *lastfmArtist) GetTopTracks(name string, limit int) (*TopTracks, error) {
+func (l *lastfmArtist) GetTopTracks(ctx context.Context, name string, limit int) (*TopTracks, error) {
 	client := l.provider.client
 	result := &struct {
 		TopTracks TopTracks `json:"toptracks"`
 	}{}
 
 	_, err := client.R().
+		SetContext(ctx).
 		SetQueryParams(map[string]string{
 			"artist": name,
 			"limit":  fmt.Sprintf("%d", limit),
@@ -82,13 +86,14 @@ func (l *lastfmArtist) GetTopTracks(name string, limit int) (*TopTracks, error) 
 	return &result.TopTracks, nil
 }
 
-func (l *lastfmArtist) GetTopAlbums(name string, limit int) (*TopAlbum, error) {
+func (l *lastfmArtist) GetTopAlbums(ctx context.Context, name string, limit int) (*TopAlbum, error) {
 	client := l.provider.client
 	result := struct {
 		TopAlbums TopAlbum `json:"topalbums"`
 	}{}
 
 	_, err := client.R().
+		SetContext(ctx).
 		SetQueryParams(map[string]string{
 			"artist": name,
 			"limit":  fmt.Sprintf("%d", limit),

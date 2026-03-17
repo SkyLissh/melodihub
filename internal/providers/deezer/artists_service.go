@@ -1,20 +1,25 @@
 package deezer
 
-import "github.com/go-playground/validator/v10"
+import (
+	"context"
+
+	"github.com/go-playground/validator/v10"
+)
 
 type ArtistService interface {
-	GetByID(id string) (*Artist, error)
+	GetByID(ctx context.Context, id string) (*Artist, error)
 }
 
 type artistService struct {
 	provider *Provider
 }
 
-func (s *artistService) GetByID(id string) (*Artist, error) {
+func (s *artistService) GetByID(ctx context.Context, id string) (*Artist, error) {
 	client := s.provider.client
 	result := &Artist{}
 
 	_, err := client.R().
+		SetContext(ctx).
 		SetPathParam("id", id).
 		SetResult(result).
 		Get("artist/{id}")

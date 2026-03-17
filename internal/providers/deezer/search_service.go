@@ -1,6 +1,7 @@
 package deezer
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -20,15 +21,14 @@ const (
 )
 
 type SearchService interface {
-	// TODO: Add more search parameters (e.g., limit, offset, order)
-	Find(query string, limit int) ([]SearchResult, error)
+	Find(ctx context.Context, query string, limit int) ([]SearchResult, error)
 }
 
 type searchService struct {
 	provider *Provider
 }
 
-func (s *searchService) Find(query string, limit int) ([]SearchResult, error) {
+func (s *searchService) Find(ctx context.Context, query string, limit int) ([]SearchResult, error) {
 	client := s.provider.client
 	var result Response[[]SearchResult]
 
@@ -37,6 +37,7 @@ func (s *searchService) Find(query string, limit int) ([]SearchResult, error) {
 	}
 
 	_, err := client.R().
+		SetContext(ctx).
 		SetQueryParam("q", query).
 		SetQueryParam("limit", fmt.Sprintf("%d", limit)).
 		SetResult(&result).

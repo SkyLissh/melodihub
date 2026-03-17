@@ -85,7 +85,7 @@ func (h searchHandler) GetSearch(c *echo.Context) error {
 		c.Logger().Error("Cache get failed", "error", err)
 	}
 
-	results, err := p.Deezer.Search.Find(query, limit)
+	results, err := p.Deezer.Search.Find(ctx, query, limit)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, model.APIError{
 			Message: "Failed to search for suggestions",
@@ -117,6 +117,8 @@ func (h searchHandler) GetSearch(c *echo.Context) error {
 //	@Failure		500		{object}	model.APIError
 //	@Router			/search/suggestions [get]
 func (h searchHandler) GetSuggestions(c *echo.Context) error {
+	ctx := c.Request().Context()
+
 	query := c.QueryParam("q")
 	if query == "" {
 		return c.JSON(http.StatusBadRequest, model.APIError{
@@ -140,7 +142,7 @@ func (h searchHandler) GetSuggestions(c *echo.Context) error {
 		})
 	}
 
-	results, err := p.Deezer.Search.Find(query, 10)
+	results, err := p.Deezer.Search.Find(ctx, query, 10)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, model.APIError{
 			Message: "Failed to search for suggestions",

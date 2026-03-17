@@ -1,23 +1,25 @@
 package lastfm
 
 import (
+	"context"
 	"fmt"
 )
 
 type LastfmTrack interface {
-	GetTopTags(track string, artist string) ([]Tag, error)
-	GetSimilar(track string, artist string, limit int) ([]SimilarTrack, error)
+	GetTopTags(ctx context.Context, track string, artist string) ([]Tag, error)
+	GetSimilar(ctx context.Context, track string, artist string, limit int) ([]SimilarTrack, error)
 }
 
 type lastfmTrack struct {
 	provider *LastfmProvider
 }
 
-func (l *lastfmTrack) GetTopTags(track string, artist string) ([]Tag, error) {
+func (l *lastfmTrack) GetTopTags(ctx context.Context, track string, artist string) ([]Tag, error) {
 	client := l.provider.client
 	result := TopTags{}
 
 	_, err := client.R().
+		SetContext(ctx).
 		SetQueryParams(map[string]string{
 			"track":  track,
 			"artist": artist,
@@ -33,6 +35,7 @@ func (l *lastfmTrack) GetTopTags(track string, artist string) ([]Tag, error) {
 }
 
 func (l *lastfmTrack) GetSimilar(
+	ctx context.Context,
 	track string,
 	artist string,
 	limit int,
@@ -41,6 +44,7 @@ func (l *lastfmTrack) GetSimilar(
 	result := SimilarTracks{}
 
 	_, err := client.R().
+		SetContext(ctx).
 		SetQueryParams(map[string]string{
 			"track":  track,
 			"artist": artist,

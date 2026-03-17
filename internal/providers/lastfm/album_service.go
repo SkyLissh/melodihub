@@ -1,18 +1,25 @@
 package lastfm
 
+import "context"
+
 type LastfmAlbum interface {
-	GetTopTags(artistName string, albumName string) ([]Tag, error)
+	GetTopTags(ctx context.Context, artistName string, albumName string) ([]Tag, error)
 }
 
 type lastfmAlbum struct {
 	provider *LastfmProvider
 }
 
-func (l *lastfmAlbum) GetTopTags(artistName string, albumName string) ([]Tag, error) {
+func (l *lastfmAlbum) GetTopTags(
+	ctx context.Context,
+	artistName string,
+	albumName string,
+) ([]Tag, error) {
 	client := l.provider.client
 	result := TopTags{}
 
 	_, err := client.R().
+		SetContext(ctx).
 		SetQueryParams(map[string]string{
 			"artist": artistName,
 			"album":  albumName,
