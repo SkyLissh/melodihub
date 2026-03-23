@@ -2,6 +2,7 @@
 package providers
 
 import (
+	"github.com/skylissh/melodihub/internal/providers/deezer"
 	"github.com/skylissh/melodihub/internal/providers/lastfm"
 	"github.com/skylissh/melodihub/internal/providers/spotify"
 )
@@ -9,4 +10,5 @@ import (
 type Providers struct {
 	Spotify *spotify.SpotifyProvider
 	Lastfm  *lastfm.LastfmProvider
+	Deezer  *deezer.Provider
 }

@@ -2,3 +2,5 @@ vendor
 tmp
 .air.toml
 docs
+.env
+*.rdb

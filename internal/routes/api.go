@@ -13,11 +13,13 @@ import (
 
 	echoSwagger "github.com/swaggo/echo-swagger"
 
+	"github.com/skylissh/melodihub/internal/cache"
 	"github.com/skylissh/melodihub/internal/core"
-
+	"github.com/skylissh/melodihub/internal/handlers"
 	"github.com/skylissh/melodihub/internal/middleware"
 
 	"github.com/skylissh/melodihub/internal/providers"
+	"github.com/skylissh/melodihub/internal/providers/deezer"
 	"github.com/skylissh/melodihub/internal/providers/lastfm"
 	"github.com/skylissh/melodihub/internal/providers/spotify"
 )
@@ -54,13 +56,23 @@ func CreateRoutes(e *echo.Echo) {
 
 	spotifyProvider := spotify.New(env.SpotifyClientID, env.SpotifyClientSecret)
 	lastfmProvider := lastfm.New(env.LastfmAPIKey)
+	deezerProvider := deezer.New()
 
 	p := &providers.Providers{
 		Spotify: spotifyProvider,
 		Lastfm:  lastfmProvider,
+		Deezer:  deezerProvider,
 	}
 
 	e.Use(middleware.Providers(p))
+
+	// Setup cache
+	cacheClient, err := cache.NewCacheClient(env.ValkeyAddr)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("failed to create cache client")
+	}
+
+	e.Use(middleware.Cache(cacheClient))
 
 	// Define routes
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
@@ -69,4 +81,7 @@ func CreateRoutes(e *echo.Echo) {
 		return c.JSON(http.StatusOK, map[string]any{"message": "ok"})
 	})
 
+	RegisterCarouselsRoutes(e, handlers.NewCarouselHandler())
+	RegisterSearchRoutes(e, handlers.NewSearchHandler())
+	RegisterArtistRoutes(e, handlers.NewArtistHandler())
 }

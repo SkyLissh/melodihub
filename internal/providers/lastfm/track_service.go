@@ -1,55 +1,61 @@
 package lastfm
 
 import (
+	"context"
 	"fmt"
 )
 
 type LastfmTrack interface {
-	GetTopTags(track string, artist string) (*[]Tag, error)
-	GetSimilar(track string, artist string, limit int) (*[]SimilarTrack, error)
+	GetTopTags(ctx context.Context, track string, artist string) ([]Tag, error)
+	GetSimilar(ctx context.Context, track string, artist string, limit int) ([]SimilarTrack, error)
 }
 
 type lastfmTrack struct {
 	provider *LastfmProvider
 }
 
-func (l *lastfmTrack) GetTopTags(track string, artist string) (*[]Tag, error) {
+func (l *lastfmTrack) GetTopTags(ctx context.Context, track string, artist string) ([]Tag, error) {
 	client := l.provider.client
+	result := TopTags{}
 
-	res, err := client.R().
+	_, err := client.R().
+		SetContext(ctx).
 		SetQueryParams(map[string]string{
 			"track":  track,
 			"artist": artist,
 		}).
-		SetResult(&TopTags{}).
+		SetResult(&result).
 		Get("track.getTopTags")
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &res.Result().(*TopTags).Tags, nil
+	return result.Tags, nil
 }
 
 func (l *lastfmTrack) GetSimilar(
+	ctx context.Context,
 	track string,
 	artist string,
 	limit int,
-) (*[]SimilarTrack, error) {
+) ([]SimilarTrack, error) {
 	client := l.provider.client
+	result := SimilarTracks{}
 
-	res, err := client.R().
+	_, err := client.R().
+		SetContext(ctx).
 		SetQueryParams(map[string]string{
 			"track":  track,
 			"artist": artist,
 			"limit":  fmt.Sprintf("%d", limit),
 		}).
-		SetResult(&SimilarTracks{}).
+		SetResult(&result).
 		Get("track.getSimilar")
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &res.Result().(*SimilarTracks).Tracks, nil
+	return result.Tracks, nil
 }

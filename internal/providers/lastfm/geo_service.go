@@ -1,12 +1,15 @@
 package lastfm
 
 import (
+	"context"
 	"fmt"
+
+	"github.com/go-playground/validator/v10"
 )
 
 type LastfmGeo interface {
-	GetTopArtists(country string, limit int, page int) (*[]Artist, error)
-	GetTopTracks(country string, limit int, page int) (*[]Track, error)
+	GetTopArtists(ctx context.Context, country string, limit int, page int) ([]Artist, error)
+	GetTopTracks(ctx context.Context, country string, limit int, page int) ([]Track, error)
 }
 
 type lastfmGeo struct {
@@ -14,47 +17,60 @@ type lastfmGeo struct {
 }
 
 func (l *lastfmGeo) GetTopArtists(
+	ctx context.Context,
 	country string,
 	limit int,
 	page int,
-) (*[]Artist, error) {
+) ([]Artist, error) {
 	client := l.provider.client
+	result := TopArtists{}
 
-	res, err := client.R().
+	_, err := client.R().
+		SetContext(ctx).
 		SetQueryParams(map[string]string{
 			"country": country,
 			"limit":   fmt.Sprintf("%d", limit),
 			"page":    fmt.Sprintf("%d", page),
 		}).
-		SetResult(&TopArtists{}).
+		SetResult(&result).
 		Get("geo.getTopArtists")
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &res.Result().(*TopArtists).TopArtists.Artists, nil
+	return result.TopArtists.Artists, nil
 }
 
 func (l *lastfmGeo) GetTopTracks(
+	ctx context.Context,
 	country string,
 	limit int,
 	page int,
-) (*[]Track, error) {
+) ([]Track, error) {
 	client := l.provider.client
+	result := struct {
+		TopTracks TopTracks `json:"tracks" validate:"required"`
+	}{}
 
-	res, err := client.R().
+	_, err := client.R().
+		SetContext(ctx).
 		SetQueryParams(map[string]string{
 			"country": country,
 			"limit":   fmt.Sprintf("%d", limit),
 			"page":    fmt.Sprintf("%d", page),
 		}).
-		SetResult(&TopTracks{}).
+		SetResult(&result).
 		Get("geo.getTopTracks")
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &res.Result().(*TopTracks).TopTracks.Tracks, nil
+	validate := validator.New()
+	if err := validate.Struct(result); err != nil {
+		return nil, err
+	}
+
+	return result.TopTracks.Tracks, nil
 }

@@ -1,6 +1,7 @@
 package spotify
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/samber/lo"
@@ -16,8 +17,7 @@ type SpotifySearchOptions struct {
 }
 
 type SpotifySearch interface {
-	Find(query string, options *SpotifySearchOptions) (*SearchResult, error)
-	// Suggest(query string, options *SpotifySearchOptions) (*SearchResult, error)
+	Find(ctx context.Context, query string, options *SpotifySearchOptions) (*SearchResult, error)
 }
 
 type spotifySearch struct {
@@ -25,6 +25,7 @@ type spotifySearch struct {
 }
 
 func (s *spotifySearch) Find(
+	ctx context.Context,
 	query string,
 	options *SpotifySearchOptions,
 ) (*SearchResult, error) {
@@ -36,6 +37,7 @@ func (s *spotifySearch) Find(
 	results := &SearchResult{}
 
 	_, err := client.R().
+		SetContext(ctx).
 		SetQueryParams(map[string]string{
 			"q":      query,
 			"limit":  fmt.Sprintf("%d", limit),
@@ -50,23 +52,15 @@ func (s *spotifySearch) Find(
 	}
 
 	if results.Tracks != nil {
-		results.Tracks.Items = lo.Filter(
-			results.Tracks.Items,
-
-			func(track Track, index int) bool {
-				return track.Popularity > 0
-			},
-		)
+		results.Tracks.Items = lo.Filter(results.Tracks.Items, func(track Track, index int) bool {
+			return track.Popularity > 0
+		})
 	}
 
 	if results.Artists != nil {
-		results.Artists.Items = lo.Filter(
-			results.Artists.Items,
-
-			func(artist Artist, index int) bool {
-				return artist.Popularity > 0
-			},
-		)
+		results.Artists.Items = lo.Filter(results.Artists.Items, func(artist Artist, index int) bool {
+			return artist.Popularity > 0
+		})
 	}
 
 	return results, nil

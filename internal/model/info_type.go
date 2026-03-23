@@ -8,9 +8,9 @@ import (
 type InfoType string
 
 const (
-	InfoTypeAlbum  InfoType = "album"
-	InfoTypeArtist InfoType = "artist"
-	InfoTypeTrack  InfoType = "track"
+	AlbumType  InfoType = "album"
+	ArtistType InfoType = "artist"
+	TrackType  InfoType = "track"
 )
 
 func (i *InfoType) String() string {
@@ -25,7 +25,7 @@ func (i *InfoType) UnmarshalJSON(data []byte) error {
 	}
 
 	switch InfoType(value) {
-	case InfoTypeAlbum, InfoTypeArtist, InfoTypeTrack:
+	case AlbumType, ArtistType, TrackType:
 		*i = InfoType(value)
 		return nil
 	default:

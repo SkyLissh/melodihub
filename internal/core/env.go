@@ -13,6 +13,7 @@ type Env struct {
 	LastfmAPIKey        string `validate:"required"`
 	SpotifyClientID     string `validate:"required"`
 	SpotifyClientSecret string `validate:"required"`
+	ValkeyAddr          string `validate:"required"`
 }
 
 func NewEnv() *Env {
@@ -25,6 +26,7 @@ func NewEnv() *Env {
 		LastfmAPIKey:        os.Getenv("LASTFM_API_KEY"),
 		SpotifyClientID:     os.Getenv("SPOTIFY_CLIENT_ID"),
 		SpotifyClientSecret: os.Getenv("SPOTIFY_CLIENT_SECRET"),
+		ValkeyAddr:          os.Getenv("VALKEY_ADDR"),
 	}
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
