@@ -14,19 +14,19 @@ import (
 var ErrCacheMiss = errors.New("cache miss")
 var DefaultTTL = 1 * time.Hour
 
-type CacheClient struct {
+type Client struct {
 	client valkey.Client
 }
 
-func NewCacheClient(addr string) (*CacheClient, error) {
+func NewClient(addr string) (*Client, error) {
 	client, err := valkey.NewClient(valkey.ClientOption{InitAddress: []string{addr}})
 	if err != nil {
 		return nil, err
 	}
-	return &CacheClient{client: client}, nil
+	return &Client{client: client}, nil
 }
 
-func (c *CacheClient) Get(ctx context.Context, key string) (string, error) {
+func (c *Client) Get(ctx context.Context, key string) (string, error) {
 	value, err := c.client.Do(ctx, c.client.B().Get().Key(key).Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
@@ -37,7 +37,7 @@ func (c *CacheClient) Get(ctx context.Context, key string) (string, error) {
 	return value, nil
 }
 
-func (c *CacheClient) Set(ctx context.Context, key string, value string, ttl time.Duration) error {
+func (c *Client) Set(ctx context.Context, key string, value string, ttl time.Duration) error {
 	err := c.client.Do(
 		ctx, c.client.B().Set().Key(key).Value(value).Ex(ttl).Build(),
 	).Error()
@@ -49,7 +49,7 @@ func (c *CacheClient) Set(ctx context.Context, key string, value string, ttl tim
 	return nil
 }
 
-func (c *CacheClient) Delete(ctx context.Context, key ...string) error {
+func (c *Client) Delete(ctx context.Context, key ...string) error {
 	err := c.client.Do(ctx, c.client.B().Del().Key(key...).Build()).Error()
 
 	if err != nil {
@@ -59,7 +59,7 @@ func (c *CacheClient) Delete(ctx context.Context, key ...string) error {
 	return nil
 }
 
-func GetJSON[T any](ctx context.Context, cache *CacheClient, key string) (T, error) {
+func GetJSON[T any](ctx context.Context, cache *Client, key string) (T, error) {
 	var result T
 
 	value, err := cache.Get(ctx, key)
@@ -77,7 +77,7 @@ func GetJSON[T any](ctx context.Context, cache *CacheClient, key string) (T, err
 
 func SetJSON[T any](
 	ctx context.Context,
-	cache *CacheClient,
+	cache *Client,
 	key string,
 	value T,
 	ttl time.Duration,
