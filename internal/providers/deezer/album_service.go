@@ -7,20 +7,20 @@ import (
 	"github.com/skylissh/melodihub/internal/validator"
 )
 
-type ArtistService struct {
+type AlbumService struct {
 	provider  *Provider
 	validator *validator.Validator
 }
 
-func (s *ArtistService) GetByID(ctx context.Context, id int) (*Artist, error) {
+func (s *AlbumService) GetDetail(context context.Context, id int) (*AlbumDetail, error) {
 	client := s.provider.client
-	result := &Artist{}
+	result := &AlbumDetail{}
 
 	_, err := client.R().
-		SetContext(ctx).
+		SetContext(context).
 		SetPathParam("id", fmt.Sprintf("%d", id)).
 		SetResult(result).
-		Get("artist/{id}")
+		Get("/album/{id}")
 
 	if err != nil {
 		return nil, err

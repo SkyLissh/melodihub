@@ -2,17 +2,20 @@
 package deezer
 
 import (
+	"encoding/json"
+
+	"github.com/skylissh/melodihub/internal/validator"
 	"resty.dev/v3"
 )
 
 type Provider struct {
 	client *resty.Client
 
-	Search SearchService
-	Artist ArtistService
+	Search *SearchService
+	Artist *ArtistService
 }
 
-func New() *Provider {
+func New(validator *validator.Validator) *Provider {
 	provider := &Provider{
 		client: resty.New(),
 	}
@@ -23,8 +26,23 @@ func New() *Provider {
 		return r.StatusCode() == 429
 	})
 
-	provider.Search = &searchService{provider: provider}
-	provider.Artist = &artistService{provider: provider}
+	provider.client.AddResponseMiddleware(func(c *resty.Client, r *resty.Response) error {
+		var res *Response[any]
+
+		if err := json.Unmarshal(r.Bytes(), &res); err == nil {
+			return nil
+		}
+
+		if res.Error.Code != 0 {
+			return mapDeezerError(res.Error)
+		}
+
+		return nil
+
+	})
+
+	provider.Search = &SearchService{provider: provider, validator: validator}
+	provider.Artist = &ArtistService{provider: provider, validator: validator}
 
 	return provider
 }

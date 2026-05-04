@@ -10,7 +10,7 @@ import (
 )
 
 func Builder(
-	deezerResult []deezer.SearchResult,
+	deezerResult []deezer.Track,
 	query *string,
 ) *Result {
 	tracks := []TrackSummary{}
@@ -94,7 +94,9 @@ func Builder(
 		Albums:  albums,
 	}
 
-	results.FindTopResult()
+	if _, err := results.FindTopResult(); err != nil {
+		return results
+	}
 
 	return results
 }

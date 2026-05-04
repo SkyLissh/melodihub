@@ -20,6 +20,8 @@ func (a ArtistSummary) GetImages() []common.Image { return a.Images }
 
 func (a ArtistSummary) GetMatch() int { return a.Match }
 
+func (a ArtistSummary) GetArtists() []ArtistSummary { return []ArtistSummary{a} }
+
 type TrackSummary struct {
 	ID       string          `json:"id" validate:"required"`
 	Type     common.InfoType `json:"type" validate:"required"`
@@ -40,6 +42,8 @@ func (t TrackSummary) GetImages() []common.Image { return t.Images }
 
 func (t TrackSummary) GetMatch() int { return t.Match }
 
+func (t TrackSummary) GetArtists() []ArtistSummary { return t.Artists }
+
 type AlbumSummary struct {
 	ID      string          `json:"id" validate:"required"`
 	Type    common.InfoType `json:"type" validate:"required"`
@@ -58,3 +62,5 @@ func (a AlbumSummary) GetType() common.InfoType { return a.Type }
 func (a AlbumSummary) GetImages() []common.Image { return a.Images }
 
 func (a AlbumSummary) GetMatch() int { return a.Match }
+
+func (a AlbumSummary) GetArtists() []ArtistSummary { return a.Artists }

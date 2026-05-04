@@ -25,7 +25,7 @@ func NewHandler(service *Service) *Handler {
 //	@Accept			json
 //	@Produce		json
 //	@Param			country	query		string	false	"Country"
-//	@Success		200		{array}	 Section
+//	@Success		200		{array}		Section
 //	@Failure		500		{object}	common.APIError
 //	@Router			/carousels [get]
 func (h *Handler) GetCarousels(c *echo.Context) error {

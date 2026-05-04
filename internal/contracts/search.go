@@ -7,5 +7,5 @@ import (
 )
 
 type DeezerSearchClient interface {
-	Find(ctx context.Context, query string, limit int) ([]deezer.SearchResult, error)
+	Find(ctx context.Context, query string, limit int) ([]deezer.Track, error)
 }

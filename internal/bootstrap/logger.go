@@ -7,16 +7,26 @@ import (
 	"github.com/labstack/echo/v5"
 	echoMiddleware "github.com/labstack/echo/v5/middleware"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
-func Logger(e *echo.Echo) {
+func NewLogger() zerolog.Logger {
 	console := zerolog.ConsoleWriter{
 		Out:        os.Stderr,
 		TimeFormat: time.RFC3339,
 	}
 	console.TimeLocation = time.Local
 
-	logger := zerolog.New(console).With().Timestamp().Logger()
+	return zerolog.New(console).With().Timestamp().Logger()
+}
+
+func SetGlobalLogger(logger zerolog.Logger) {
+	zerolog.TimeFieldFormat = time.RFC3339
+	zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	log.Logger = logger
+}
+
+func Logger(e *echo.Echo, logger zerolog.Logger) {
 
 	e.Use(echoMiddleware.RequestLoggerWithConfig(echoMiddleware.RequestLoggerConfig{
 		LogURI:     true,

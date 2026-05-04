@@ -13,6 +13,7 @@ type ResultInfo interface {
 	GetType() common.InfoType
 	GetImages() []common.Image
 	GetMatch() int
+	GetArtists() []ArtistSummary
 }
 
 type Result struct {
@@ -23,7 +24,11 @@ type Result struct {
 }
 
 func (r *Result) FindTopResult() (*TopResult, error) {
-	if r.TopResult.ID != "" {
+	if r == nil {
+		return nil, fmt.Errorf("result is nil")
+	}
+
+	if r.TopResult != nil && r.TopResult.ID != "" {
 		return r.TopResult, nil
 	}
 
@@ -47,11 +52,14 @@ func (r *Result) FindTopResult() (*TopResult, error) {
 		return x.GetMatch() - y.GetMatch()
 	})
 
-	return &TopResult{
-		ID:     top.GetID(),
-		Name:   top.GetName(),
-		Type:   top.GetType(),
-		Images: top.GetImages(),
-		Match:  top.GetMatch(),
-	}, nil
+	r.TopResult = &TopResult{
+		ID:      top.GetID(),
+		Name:    top.GetName(),
+		Type:    top.GetType(),
+		Images:  top.GetImages(),
+		Match:   top.GetMatch(),
+		Artists: top.GetArtists(),
+	}
+
+	return r.TopResult, nil
 }

@@ -18,8 +18,8 @@ type lastfmGeoData struct {
 }
 
 type deezerGeoData struct {
-	topArtists []deezer.SearchResult
-	topTracks  []deezer.SearchResult
+	topArtists []deezer.Track
+	topTracks  []deezer.Track
 }
 
 type Service struct {
@@ -153,8 +153,8 @@ func (s *Service) getDeezerData(
 	g, gCtx := errgroup.WithContext(ctx)
 	g.SetLimit(5)
 
-	deezerArtists := make([]deezer.SearchResult, len(data.topArtists))
-	deezerTracks := make([]deezer.SearchResult, len(data.topTracks))
+	deezerArtists := make([]deezer.Track, len(data.topArtists))
+	deezerTracks := make([]deezer.Track, len(data.topTracks))
 
 	for i, artist := range data.topArtists {
 		g.Go(func() error {

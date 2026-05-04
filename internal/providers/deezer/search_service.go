@@ -5,32 +5,17 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/go-playground/validator/v10"
+	"github.com/skylissh/melodihub/internal/validator"
 )
 
-type SearchOrder string
-
-const (
-	SearchOrderRanking      SearchOrder = "RANKING"
-	SearchOrderTrackAsc     SearchOrder = "TRACK_ASC"
-	SearchOrderTrackDesc    SearchOrder = "TRACK_DESC"
-	SearchOrderArtistAsc    SearchOrder = "ARTIST_ASC"
-	SearchOrderArtistDesc   SearchOrder = "ARTIST_DESC"
-	SearchOrderDurationAsc  SearchOrder = "DURATION_ASC"
-	SearchOrderDurationDesc SearchOrder = "DURATION_DESC"
-)
-
-type SearchService interface {
-	Find(ctx context.Context, query string, limit int) ([]SearchResult, error)
+type SearchService struct {
+	provider  *Provider
+	validator *validator.Validator
 }
 
-type searchService struct {
-	provider *Provider
-}
-
-func (s *searchService) Find(ctx context.Context, query string, limit int) ([]SearchResult, error) {
+func (s *SearchService) Find(ctx context.Context, query string, limit int) ([]Track, error) {
 	client := s.provider.client
-	var result Response[[]SearchResult]
+	var result Response[Data[[]Track]]
 
 	if limit <= 0 {
 		return nil, errors.New("limit must be greater than 0")
@@ -44,13 +29,12 @@ func (s *searchService) Find(ctx context.Context, query string, limit int) ([]Se
 		Get("search")
 
 	if err != nil {
-		return nil, err
+		return nil, ServerError("failed to search tracks")
 	}
 
-	validate := validator.New()
-	if err := validate.Struct(result); err != nil {
-		return nil, err
+	if err := s.validator.Validate(result); err != nil {
+		return nil, InvalidResponse(err)
 	}
 
-	return result.Data, nil
+	return result.Data.Data, nil
 }
