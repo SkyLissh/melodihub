@@ -1,12 +1,10 @@
 package search
 
 import (
-	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/labstack/echo/v5"
-	common "github.com/skylissh/melodihub/internal/domain"
+	"github.com/skylissh/melodihub/internal/domain"
 )
 
 type Handler struct {
@@ -26,35 +24,30 @@ func NewHandler(service *Service) *Handler {
 //	@Produce		json
 //	@Param			q		query		string	true	"Search query"
 //	@Param			limit	query		int		false	"Number of results to return"
-//	@Success		200		{object}	Result
-//	@Failure		400		{object}	common.APIError
-//	@Failure		500		{object}	common.APIError
+//	@Success		200		{object}	ResultResponse
+//	@Failure		400		{object}	domain.APIError
+//	@Failure		500		{object}	domain.APIError
 //	@Router			/search [get]
 func (h *Handler) GetSearch(c *echo.Context) error {
 	ctx := c.Request().Context()
 
-	query := c.QueryParam("q")
-	if query == "" {
-		return c.JSON(http.StatusBadRequest, common.NewAPIError(
-			"Query parameter 'q' is required",
-			http.StatusBadRequest,
-		))
-	}
-
-	limit := 10
-	if limitParam := c.QueryParam("limit"); limitParam != "" {
-		if l, err := strconv.Atoi(limitParam); err == nil && l > 0 {
-			limit = l
-		}
-	}
-
-	search, err := h.service.GetSearch(ctx, query, limit)
+	query, err := ParseQuery(c.QueryParam("q"))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, common.NewAPIError(
-			fmt.Sprintf("Failed to get search results: %v", err),
-			http.StatusInternalServerError,
-		))
+		apiErr, status := domain.APIErrorFromMelodiError(domain.InvalidParam(err))
+		return c.JSON(status, apiErr)
 	}
 
-	return c.JSON(http.StatusOK, search)
+	limit, err := ParseLimit(c.QueryParam("limit"))
+	if err != nil {
+		apiErr, status := domain.APIErrorFromMelodiError(domain.InvalidParam(err))
+		return c.JSON(status, apiErr)
+	}
+
+	response, err := h.service.GetSearch(ctx, query, limit)
+	if err != nil {
+		apiErr, status := domain.APIErrorFromMelodiError(err)
+		return c.JSON(status, apiErr)
+	}
+
+	return c.JSON(http.StatusOK, response)
 }

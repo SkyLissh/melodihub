@@ -14,21 +14,25 @@ type ArtistService struct {
 
 func (s *ArtistService) GetByID(ctx context.Context, id int) (*Artist, error) {
 	client := s.provider.client
-	result := &Artist{}
+	var result Response[Artist]
 
 	_, err := client.R().
 		SetContext(ctx).
 		SetPathParam("id", fmt.Sprintf("%d", id)).
-		SetResult(result).
+		SetResult(&result).
 		Get("artist/{id}")
 
 	if err != nil {
-		return nil, err
+		return nil, ServerError(err)
 	}
 
-	if err := s.validator.Validate(result); err != nil {
+	if result.Error != nil {
+		return nil, result.Error.ToError()
+	}
+
+	if err := s.validator.Validate(result.Data); err != nil {
 		return nil, InvalidResponse(err)
 	}
 
-	return result, nil
+	return result.Data, nil
 }

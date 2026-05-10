@@ -16,7 +16,9 @@ type lastfmTrack struct {
 
 func (l *lastfmTrack) GetTopTags(ctx context.Context, track string, artist string) ([]Tag, error) {
 	client := l.provider.client
-	result := TopTags{}
+	var result Response[struct {
+		TopTags TopTags `json:"toptags"`
+	}]
 
 	_, err := client.R().
 		SetContext(ctx).
@@ -28,10 +30,14 @@ func (l *lastfmTrack) GetTopTags(ctx context.Context, track string, artist strin
 		Get("track.getTopTags")
 
 	if err != nil {
-		return nil, err
+		return nil, ServerError(err)
 	}
 
-	return result.Tags, nil
+	if result.Error != nil {
+		return nil, result.Error.ToError()
+	}
+
+	return result.Data.TopTags.Tags, nil
 }
 
 func (l *lastfmTrack) GetSimilar(
@@ -41,7 +47,9 @@ func (l *lastfmTrack) GetSimilar(
 	limit int,
 ) ([]SimilarTrack, error) {
 	client := l.provider.client
-	result := SimilarTracks{}
+	var result Response[struct {
+		SimilarTracks SimilarTracks `json:"similartracks"`
+	}]
 
 	_, err := client.R().
 		SetContext(ctx).
@@ -54,8 +62,12 @@ func (l *lastfmTrack) GetSimilar(
 		Get("track.getSimilar")
 
 	if err != nil {
-		return nil, err
+		return nil, ServerError(err)
 	}
 
-	return result.Tracks, nil
+	if result.Error != nil {
+		return nil, result.Error.ToError()
+	}
+
+	return result.Data.SimilarTracks.Tracks, nil
 }

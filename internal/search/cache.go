@@ -15,9 +15,9 @@ func NewCache(client *cache.Client) *Cache {
 	return &Cache{client: client}
 }
 
-func (s *Cache) Get(ctx context.Context, query string, limit int) (*Result, bool) {
+func (s *Cache) Get(ctx context.Context, query Query, limit Limit) (*ResultResponse, bool) {
 	key := fmt.Sprintf("search:%s:%d", query, limit)
-	result, err := cache.GetJSON[Result](ctx, s.client, key)
+	result, err := cache.GetJSON[ResultResponse](ctx, s.client, key)
 	if err != nil {
 		return nil, false
 	}
@@ -26,12 +26,12 @@ func (s *Cache) Get(ctx context.Context, query string, limit int) (*Result, bool
 
 func (s *Cache) Set(
 	ctx context.Context,
-	query string,
-	limit int,
-	result *Result,
+	query Query,
+	limit Limit,
+	result *ResultResponse,
 ) bool {
 	key := fmt.Sprintf("search:%s:%d", query, limit)
-	if err := cache.SetJSON(ctx, s.client, key, &result, cache.DefaultTTL); err != nil {
+	if err := cache.SetJSON(ctx, s.client, key, result, cache.DefaultTTL); err != nil {
 		return false
 	}
 	return true

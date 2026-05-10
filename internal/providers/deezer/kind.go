@@ -17,19 +17,6 @@ func (k Kind) String() string {
 	return string(k)
 }
 
-func ParseKind(s string) (Kind, error) {
-	switch s {
-	case "album":
-		return AlbumKind, nil
-	case "artist":
-		return ArtistKind, nil
-	case "track":
-		return TrackKind, nil
-	default:
-		return "", fmt.Errorf("unknown kind: %s", s)
-	}
-}
-
 func (k Kind) IsValid() bool {
 	switch k {
 	case AlbumKind, ArtistKind, TrackKind:
@@ -39,19 +26,17 @@ func (k Kind) IsValid() bool {
 	}
 }
 
-func (k Kind) MarshalJSON() ([]byte, error) {
-	return []byte(`"` + k.String() + `"`), nil
-}
-
 func (k *Kind) UnmarshalJSON(data []byte) error {
-	var s string
-	if err := json.Unmarshal(data, &s); err != nil {
+	var res string
+	if err := json.Unmarshal(data, &res); err != nil {
 		return err
 	}
-	parsed, err := ParseKind(s)
-	if err != nil {
-		return err
+
+	kind := Kind(res)
+	if !kind.IsValid() {
+		return fmt.Errorf("invalid kind: %s", res)
 	}
-	*k = parsed
+
+	*k = kind
 	return nil
 }

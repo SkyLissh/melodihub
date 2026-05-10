@@ -23,7 +23,7 @@ func (l *lastfmGeo) GetTopArtists(
 	page int,
 ) ([]Artist, error) {
 	client := l.provider.client
-	result := TopArtists{}
+	var result Response[TopArtists]
 
 	_, err := client.R().
 		SetContext(ctx).
@@ -36,10 +36,14 @@ func (l *lastfmGeo) GetTopArtists(
 		Get("geo.getTopArtists")
 
 	if err != nil {
-		return nil, err
+		return nil, ServerError(err)
 	}
 
-	return result.TopArtists.Artists, nil
+	if result.Error != nil {
+		return nil, result.Error.ToError()
+	}
+
+	return result.Data.TopArtists.Artists, nil
 }
 
 func (l *lastfmGeo) GetTopTracks(
@@ -49,9 +53,9 @@ func (l *lastfmGeo) GetTopTracks(
 	page int,
 ) ([]Track, error) {
 	client := l.provider.client
-	result := struct {
+	var result Response[struct {
 		TopTracks TopTracks `json:"tracks" validate:"required"`
-	}{}
+	}]
 
 	_, err := client.R().
 		SetContext(ctx).
@@ -64,13 +68,17 @@ func (l *lastfmGeo) GetTopTracks(
 		Get("geo.getTopTracks")
 
 	if err != nil {
-		return nil, err
+		return nil, ServerError(err)
+	}
+
+	if result.Error != nil {
+		return nil, result.Error.ToError()
 	}
 
 	validate := validator.New()
-	if err := validate.Struct(result); err != nil {
-		return nil, err
+	if err := validate.Struct(result.Data); err != nil {
+		return nil, InvalidResponse(err)
 	}
 
-	return result.TopTracks.Tracks, nil
+	return result.Data.TopTracks.Tracks, nil
 }

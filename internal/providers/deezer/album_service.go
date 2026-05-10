@@ -14,21 +14,25 @@ type AlbumService struct {
 
 func (s *AlbumService) GetDetail(context context.Context, id int) (*AlbumDetail, error) {
 	client := s.provider.client
-	result := &AlbumDetail{}
+	var result Response[AlbumDetail]
 
 	_, err := client.R().
 		SetContext(context).
 		SetPathParam("id", fmt.Sprintf("%d", id)).
-		SetResult(result).
+		SetResult(&result).
 		Get("/album/{id}")
 
 	if err != nil {
-		return nil, err
+		return nil, ServerError(err)
 	}
 
-	if err := s.validator.Validate(result); err != nil {
+	if result.Error != nil {
+		return nil, result.Error.ToError()
+	}
+
+	if err := s.validator.Validate(result.Data); err != nil {
 		return nil, InvalidResponse(err)
 	}
 
-	return result, nil
+	return result.Data, nil
 }

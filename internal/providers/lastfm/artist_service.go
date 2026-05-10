@@ -20,7 +20,7 @@ type lastfmArtist struct {
 
 func (l *lastfmArtist) GetSimilar(ctx context.Context, name string, limit int) ([]Artist, error) {
 	client := l.provider.client
-	result := SimilarArtists{}
+	var result Response[SimilarArtists]
 
 	_, err := client.R().
 		SetContext(ctx).
@@ -32,17 +32,21 @@ func (l *lastfmArtist) GetSimilar(ctx context.Context, name string, limit int) (
 		Get("artist.getSimilar")
 
 	if err != nil {
-		return nil, err
+		return nil, ServerError(err)
 	}
 
-	return result.SimilarArtists.Artists, nil
+	if result.Error != nil {
+		return nil, result.Error.ToError()
+	}
+
+	return result.Data.SimilarArtists.Artists, nil
 }
 
 func (l *lastfmArtist) GetDetail(ctx context.Context, name string) (*ArtistDetail, error) {
 	client := l.provider.client
-	result := struct {
+	var result Response[struct {
 		Artist ArtistDetail `json:"artist"`
-	}{}
+	}]
 
 	_, err := client.R().
 		SetContext(ctx).
@@ -53,17 +57,21 @@ func (l *lastfmArtist) GetDetail(ctx context.Context, name string) (*ArtistDetai
 		Get("artist.getInfo")
 
 	if err != nil {
-		return nil, err
+		return nil, ServerError(err)
 	}
 
-	return &result.Artist, nil
+	if result.Error != nil {
+		return nil, result.Error.ToError()
+	}
+
+	return &result.Data.Artist, nil
 }
 
 func (l *lastfmArtist) GetTopTracks(ctx context.Context, name string, limit int) (*TopTracks, error) {
 	client := l.provider.client
-	result := &struct {
+	var result Response[struct {
 		TopTracks TopTracks `json:"toptracks"`
-	}{}
+	}]
 
 	_, err := client.R().
 		SetContext(ctx).
@@ -71,26 +79,30 @@ func (l *lastfmArtist) GetTopTracks(ctx context.Context, name string, limit int)
 			"artist": name,
 			"limit":  fmt.Sprintf("%d", limit),
 		}).
-		SetResult(result).
+		SetResult(&result).
 		Get("artist.getTopTracks")
 
 	if err != nil {
-		return nil, err
+		return nil, ServerError(err)
+	}
+
+	if result.Error != nil {
+		return nil, result.Error.ToError()
 	}
 
 	validator := validator.New()
-	if err := validator.Struct(&result.TopTracks); err != nil {
-		return nil, err
+	if err := validator.Struct(&result.Data.TopTracks); err != nil {
+		return nil, InvalidResponse(err)
 	}
 
-	return &result.TopTracks, nil
+	return &result.Data.TopTracks, nil
 }
 
 func (l *lastfmArtist) GetTopAlbums(ctx context.Context, name string, limit int) (*TopAlbum, error) {
 	client := l.provider.client
-	result := struct {
+	var result Response[struct {
 		TopAlbums TopAlbum `json:"topalbums"`
-	}{}
+	}]
 
 	_, err := client.R().
 		SetContext(ctx).
@@ -102,13 +114,17 @@ func (l *lastfmArtist) GetTopAlbums(ctx context.Context, name string, limit int)
 		Get("artist.getTopAlbums")
 
 	if err != nil {
-		return nil, err
+		return nil, ServerError(err)
+	}
+
+	if result.Error != nil {
+		return nil, result.Error.ToError()
 	}
 
 	validate := validator.New()
-	if err := validate.Struct(&result.TopAlbums); err != nil {
-		return nil, err
+	if err := validate.Struct(&result.Data.TopAlbums); err != nil {
+		return nil, InvalidResponse(err)
 	}
 
-	return &result.TopAlbums, nil
+	return &result.Data.TopAlbums, nil
 }

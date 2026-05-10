@@ -18,6 +18,7 @@ var (
 	ErrAccountNotAllowed = errors.New("individual account not allowed")
 	ErrInvalidResponse   = errors.New("invalid response")
 	ErrServer            = errors.New("server error")
+	ErrUnknownCode       = errors.New("unknown error code")
 )
 
 type DeezerError struct {
@@ -37,63 +38,10 @@ func (e DeezerError) Unwrap() error {
 	return e.Kind
 }
 
-func mapDeezerError(res *ErrorResponse) error {
-	err := DeezerError{}
-
-	switch res.Code {
-	case 4:
-		err.Kind = ErrQuotaExceeded
-	case 100:
-		err.Kind = ErrItemsLimit
-	case 200:
-		err.Kind = ErrPermission
-	case 300:
-		err.Kind = ErrTokenInvalid
-	case 500:
-		err.Kind = ErrInvalidParameter
-	case 501:
-		err.Kind = ErrParameterMissing
-	case 600:
-		err.Kind = ErrQueryInvalid
-	case 700:
-		err.Kind = ErrServiceBusy
-	case 800:
-		err.Kind = ErrNotFound
-	case 901:
-		err.Kind = ErrAccountNotAllowed
-	default:
-		err.Kind = ErrServer
-		err.Msg = fmt.Sprintf("code=%d message=%s", res.Code, res.Message)
-	}
-
-	return err
-}
-
-func NotFound(kind Kind, id string) error {
+func ServerError(err error) error {
 	return DeezerError{
-		Kind: ErrNotFound,
-		Msg:  fmt.Sprintf("%s with id %q", kind, id),
-	}
-}
-
-func ParameterMissing(name string) error {
-	return DeezerError{
-		Kind: ErrParameterMissing,
-		Msg:  name,
-	}
-}
-
-func InvalidParameter(name string) error {
-	return DeezerError{
-		Kind: ErrInvalidParameter,
-		Msg:  name,
-	}
-}
-
-func QueryInvalid(query string) error {
-	return DeezerError{
-		Kind: ErrQueryInvalid,
-		Msg:  query,
+		Kind: ErrServer,
+		Msg:  err.Error(),
 	}
 }
 
@@ -104,9 +52,9 @@ func InvalidResponse(err error) error {
 	}
 }
 
-func ServerError(msg string) error {
+func UnknownCode(code ErrorCode, kind string, msg string) error {
 	return DeezerError{
-		Kind: ErrServer,
-		Msg:  msg,
+		Kind: ErrUnknownCode,
+		Msg:  fmt.Sprintf("code=%d kind=%s msg=%s", code, kind, msg),
 	}
 }

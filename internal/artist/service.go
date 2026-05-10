@@ -179,66 +179,66 @@ func (s *Service) getArtistData(
 			return err
 		}
 
-		search := search.Builder(result, nil)
+		searchResult := search.ResultFromDeezer(search.Query(name), result)
 
-		for _, a := range search.Albums {
+		for _, a := range searchResult.Albums() {
 			if len(topAlbums) >= 15 {
 				break
 			}
 
 			_, ok := lo.Find(data.TopAlbums, func(la lastfm.Album) bool {
-				return strings.EqualFold(la.Name, a.Title)
+				return strings.EqualFold(la.Name, a.Name())
 			})
 			if !ok {
 				continue
 			}
 
 			topAlbums = append(topAlbums, TopAlbum{
-				ID:     a.ID,
+				ID:     a.ID().String(),
 				Type:   common.AlbumType,
-				Title:  a.Title,
-				Images: a.Images,
+				Title:  a.Name(),
+				Images: a.Images(),
 			})
 		}
 
-		for _, t := range search.Tracks {
+		for _, t := range searchResult.Tracks() {
 			if len(topTracks) >= 10 {
 				break
 			}
 
 			m, ok := lo.Find(data.TopTracks, func(lt lastfm.Track) bool {
-				return strings.EqualFold(lt.Name, t.Title)
+				return strings.EqualFold(lt.Name, t.Name())
 			})
 			if !ok {
 				continue
 			}
 
 			topTracks = append(topTracks, TopTrack{
-				ID:        t.ID,
+				ID:        t.ID().String(),
 				Type:      common.TrackType,
-				Title:     t.Title,
-				Duration:  t.Duration,
-				Images:    t.Images,
+				Title:     t.Name(),
+				Duration:  t.Duration(),
+				Images:    t.Images(),
 				Listeners: m.Listeners,
 			})
 		}
 
-		for _, a := range search.Artists {
+		for _, a := range searchResult.Artists() {
 			if len(similar) >= 5 {
 				break
 			}
 
 			_, ok := lo.Find(data.Similar, func(r lastfm.Artist) bool {
-				return strings.EqualFold(r.Name, a.Name)
+				return strings.EqualFold(r.Name, a.Name())
 			})
 			if !ok {
 				continue
 			}
 
 			similar = append(similar, NewSummary(
-				fmt.Sprintf("deezer:%s", a.ID),
-				a.Name,
-				a.Images,
+				a.ID().String(),
+				a.Name(),
+				a.Images(),
 			))
 		}
 
