@@ -1,16 +1,34 @@
 package search
 
-import "errors"
+import (
+	"errors"
+	"strings"
+	"unicode"
+)
 
-var ErrInvalidQuery = errors.New("search query cannot be empty")
+var (
+	ErrInvalidQuery = errors.New("search query cannot be empty")
+	ErrInvalidChar  = errors.New("search query cannot contain invalid characters")
+)
 
 type Query string
 
 func ParseQuery(q string) (Query, error) {
-	if q == "" {
+	query := strings.TrimSpace(q)
+
+	if query == "" {
 		return "", ErrInvalidQuery
 	}
-	return Query(q), nil
+
+	for _, char := range query {
+		if unicode.IsLetter(char) || unicode.IsDigit(char) || unicode.IsSpace(char) {
+			continue
+		}
+
+		return "", ErrInvalidChar
+	}
+
+	return Query(query), nil
 }
 
 func (q Query) String() string {

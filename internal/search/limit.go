@@ -6,7 +6,8 @@ import (
 )
 
 var (
-	ErrLimitInvalid  = errors.New("search limit must be greater than 0")
+	ErrLimitInvalid  = errors.New("search limit must be a positive integer")
+	ErrLimitTooSmall = errors.New("search limit is too small (min 1)")
 	ErrLimitTooLarge = errors.New("search limit is too large (max 100)")
 )
 
@@ -25,7 +26,7 @@ func ParseLimit(value string) (Limit, error) {
 	}
 
 	if val == 0 {
-		return 0, ErrLimitInvalid
+		return 0, ErrLimitTooSmall
 	}
 
 	if val > 100 {

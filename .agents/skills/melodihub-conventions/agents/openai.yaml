@@ -1,0 +1,4 @@
+interface:
+  display_name: "MelodiHub Conventions"
+  short_description: "Project architecture and naming conventions"
+  default_prompt: "Use $melodihub-conventions before changing MelodiHub domain, provider, or feature code."

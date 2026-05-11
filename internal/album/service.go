@@ -1,11 +1,5 @@
 package album
 
-import (
-	"context"
-
-	"github.com/skylissh/melodihub/internal/domain"
-)
-
 type Service struct {
 	cache *Cache
 
@@ -20,10 +14,10 @@ func NewService(cache *Cache, album AlbumDetailClient) *Service {
 	return &Service{cache: cache, album: album}
 }
 
-func (s *Service) GetAlbumDetail(id *domain.ID) (*Detail, error) {
-	album, err := s.album.GetDetail(context.Background(), id.RawId())
-	if err != nil {
-		return nil, err
-	}
+// func (s *Service) GetAlbumDetail(id *domain.ID) (*Detail, error) {
+// 	album, err := s.album.GetDetail(context.Background(), id.RawId())
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-}
+// }

@@ -115,7 +115,7 @@ func TestHandlerGetSearchReturnsBadRequestWhenLimitInvalid(t *testing.T) {
 	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &apiErr))
 	assert.Equal(t, domain.CodeInvalidParam, apiErr.Code)
 	assert.Equal(t, "Invalid param", apiErr.Message)
-	assert.Equal(t, "search limit must be greater than 0", apiErr.Cause)
+	assert.Equal(t, "search limit is too small (min 1)", apiErr.Cause)
 }
 
 func TestHandlerGetSearchMapsDeezerInvalidQueryToInvalidParam(t *testing.T) {

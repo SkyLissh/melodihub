@@ -15,9 +15,9 @@ func NewCache(client *cache.Client) *Cache {
 	return &Cache{client}
 }
 
-func (c *Cache) Get(ctx context.Context, country string) ([]Section, bool) {
-	key := fmt.Sprintf("carousel:%s", country)
-	carousel, err := cache.GetJSON[[]Section](ctx, c.client, key)
+func (c *Cache) Get(ctx context.Context, country Country) ([]CarouselResponse, bool) {
+	key := fmt.Sprintf("carousel:%s", country.String())
+	carousel, err := cache.GetJSON[[]CarouselResponse](ctx, c.client, key)
 	if err != nil {
 		return nil, false
 	}
@@ -25,8 +25,8 @@ func (c *Cache) Get(ctx context.Context, country string) ([]Section, bool) {
 	return carousel, true
 }
 
-func (c *Cache) Set(ctx context.Context, country string, carousel []Section) bool {
-	key := fmt.Sprintf("carousel:%s", country)
+func (c *Cache) Set(ctx context.Context, country Country, carousel []CarouselResponse) bool {
+	key := fmt.Sprintf("carousel:%s", country.String())
 	if err := cache.SetJSON(ctx, c.client, key, carousel, cache.DefaultTTL); err != nil {
 		return false
 	}
