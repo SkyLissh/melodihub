@@ -16,7 +16,9 @@ func (l *lastfmAlbum) GetTopTags(
 	albumName string,
 ) ([]Tag, error) {
 	client := l.provider.client
-	result := TopTags{}
+	var result Response[struct {
+		TopTags TopTags `json:"toptags"`
+	}]
 
 	_, err := client.R().
 		SetContext(ctx).
@@ -28,8 +30,12 @@ func (l *lastfmAlbum) GetTopTags(
 		Get("album.getTopTags")
 
 	if err != nil {
-		return nil, err
+		return nil, ServerError(err)
 	}
 
-	return result.Tags, nil
+	if result.Error != nil {
+		return nil, result.Error.ToError()
+	}
+
+	return result.Data.TopTags.Tags, nil
 }

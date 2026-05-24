@@ -2,7 +2,6 @@
 package lastfm
 
 import (
-	"encoding/json"
 	"net/url"
 	"strings"
 
@@ -42,19 +41,6 @@ func New(apiKey string) *LastfmProvider {
 		newURL.RawQuery = q.Encode()
 
 		req.SetURL(newURL.String())
-
-		return nil
-	})
-
-	l.client.AddResponseMiddleware(func(ctx *resty.Client, res *resty.Response) error {
-		apiErr := &responseError{}
-		if err := json.Unmarshal(res.Bytes(), apiErr); err != nil {
-			return nil // non-JSON response, not an API error
-		}
-
-		if apiErr.Error != 0 {
-			return newResponseError(apiErr.Error, apiErr.Message)
-		}
 
 		return nil
 	})

@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/labstack/echo/v5"
+	"github.com/rs/zerolog/log"
 	echoSwagger "github.com/swaggo/echo-swagger"
 
 	_ "github.com/skylissh/melodihub/docs"
@@ -15,19 +16,22 @@ import (
 // @description	This is an api REST for the metadata plugin for Melodi
 // @host			localhost:3000
 func main() {
+	logger := bootstrap.NewLogger()
+	bootstrap.SetGlobalLogger(logger)
+
 	env, err := core.NewEnv()
 	if err != nil {
-		panic(err)
+		log.Fatal().Err(err).Msg("failed to load environment")
 	}
 
 	e := echo.New()
 
 	cacheClient, err := cache.NewClient(env.ValkeyAddr)
 	if err != nil {
-		panic(err)
+		log.Fatal().Err(err).Msg("failed to create cache client")
 	}
 
-	bootstrap.Logger(e)
+	bootstrap.Logger(e, logger)
 	bootstrap.CORS(e)
 
 	app := bootstrap.NewApp(&bootstrap.Config{
@@ -44,7 +48,9 @@ func main() {
 	app.Carousel.RegisterRoutes(e)
 	app.Artist.RegisterRoutes(e)
 
+	log.Info().Str("addr", ":3000").Msg("starting server")
+
 	if err := e.Start(":3000"); err != nil {
-		e.Logger.Error("failed to start server", "error", err)
+		log.Fatal().Err(err).Msg("failed to start server")
 	}
 }

@@ -2,17 +2,18 @@
 package deezer
 
 import (
+	"github.com/skylissh/melodihub/internal/validator"
 	"resty.dev/v3"
 )
 
 type Provider struct {
 	client *resty.Client
 
-	Search SearchService
-	Artist ArtistService
+	Search *SearchService
+	Artist *ArtistService
 }
 
-func New() *Provider {
+func New(validator *validator.Validator) *Provider {
 	provider := &Provider{
 		client: resty.New(),
 	}
@@ -23,8 +24,8 @@ func New() *Provider {
 		return r.StatusCode() == 429
 	})
 
-	provider.Search = &searchService{provider: provider}
-	provider.Artist = &artistService{provider: provider}
+	provider.Search = &SearchService{provider: provider, validator: validator}
+	provider.Artist = &ArtistService{provider: provider, validator: validator}
 
 	return provider
 }

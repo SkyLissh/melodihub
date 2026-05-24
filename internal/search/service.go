@@ -18,21 +18,25 @@ func NewService(search contracts.DeezerSearchClient, cache *Cache) *Service {
 
 func (s *Service) GetSearch(
 	ctx context.Context,
-	query string,
-	limit int,
-) (*Result, error) {
+	query Query,
+	limit Limit,
+) (*ResultResponse, error) {
 	if s.cache != nil {
 		if cached, ok := s.cache.Get(ctx, query, limit); ok {
 			return cached, nil
 		}
 	}
 
-	results, err := s.search.Find(ctx, query, limit)
+	results, err := s.search.Find(ctx, query.String(), limit.Value())
 	if err != nil {
-		return nil, fmt.Errorf("Failed to search: %w", err)
+		return nil, SearchErrorFromDeezerError(err)
 	}
 
-	result := Builder(results, &query)
+	result, err := ResponseFromResult(ResultFromDeezer(query, results))
+	if err != nil {
+		return nil, fmt.Errorf("failed to build search response: %w", err)
+	}
+
 	if s.cache != nil {
 		s.cache.Set(ctx, query, limit, result)
 	}

@@ -1,59 +1,75 @@
 package lastfm
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
-type responseError struct {
-	Error   int    `json:"error"`
-	Message string `json:"message"`
+var (
+	ErrInvalidService         = errors.New("invalid service")
+	ErrInvalidMethod          = errors.New("invalid method")
+	ErrAuthFailed             = errors.New("authentication failed")
+	ErrInvalidFormat          = errors.New("invalid format")
+	ErrBadAuthToken           = errors.New("bad authentication token")
+	ErrInvalidParameter       = errors.New("invalid parameter")
+	ErrInvalidResource        = errors.New("invalid resource")
+	ErrOperationFailed        = errors.New("operation failed")
+	ErrInvalidSessionKey      = errors.New("invalid session key")
+	ErrInvalidSignature       = errors.New("invalid method signature")
+	ErrTemporaryServerIssues  = errors.New("temporary server issues")
+	ErrInvalidUsername        = errors.New("invalid username")
+	ErrInvalidTimestamp       = errors.New("invalid timestamp")
+	ErrDeletedAPIKey          = errors.New("deleted api key")
+	ErrNotEnoughContent       = errors.New("not enough content")
+	ErrServiceUnavailable     = errors.New("service unavailable")
+	ErrUserRequired           = errors.New("user required")
+	ErrSubsonicServerRequired = errors.New("subsonic server required")
+	ErrLegacyMethodDisabled   = errors.New("legacy method disabled")
+	ErrBadAccountScrobble     = errors.New("bad account scrobble")
+	ErrNonExistentError       = errors.New("non-existent error code")
+	ErrRegistrationDisabled   = errors.New("registration disabled")
+	ErrTooManyRequests        = errors.New("too many requests")
+	ErrAPIKeyPermissionDenied = errors.New("api key permission denied")
+	ErrSuspendedAPIKey        = errors.New("suspended api key")
+	ErrRateLimited            = errors.New("rate limited")
+	ErrOffline                = errors.New("offline")
+	ErrInvalidResponse        = errors.New("invalid response")
+	ErrServer                 = errors.New("server error")
+	ErrUnknownCode            = errors.New("unknown error code")
+)
+
+type LastfmError struct {
+	Kind error
+	Msg  string
 }
 
-var errorCodeToStatus = map[int]int{
-	1:  400, // Invalid service
-	2:  400, // Invalid Method
-	3:  401, // Authentication Failed
-	4:  400, // Invalid format
-	5:  401, // Bad authentication token
-	6:  400, // Invalid parameters
-	7:  404, // Invalid resource specified
-	8:  500, // Operation failed
-	9:  401, // Invalid session key
-	10: 400, // Invalid method signature supplied
-	11: 503, // Temporary server issues
-	13: 400, // Invalid username
-	14: 400, // Invalid timestamp
-	15: 403, // Deleted API Key
-	16: 400, // Not enough content
-	17: 503, // Service temporarily unavailable
-	18: 401, // Login: User required
-	19: 400, // Subsonic server required
-	20: 410, // Legacy API method no longer active
-	21: 403, // Scrobbles to bad/suspended account
-	22: 400, // This error does not exist
-	23: 403, // Open registration disabled
-	24: 429, // Too many requests in short time
-	25: 403, // API key permissions not granted
-	26: 403, // Suspended API key
-	27: 429, // Rate limited
-	29: 503, // Offline
-}
-
-type ResponseError struct {
-	StatusCode int
-	Message    string
-}
-
-func (e *ResponseError) Error() string {
-	return fmt.Sprintf("Last.fm API error %d: %s", e.StatusCode, e.Message)
-}
-
-func newResponseError(errorCode int, message string) *ResponseError {
-	statusCode, ok := errorCodeToStatus[errorCode]
-	if !ok {
-		statusCode = 500 // Default to Internal Server Error if code is unknown
+func (e LastfmError) Error() string {
+	if e.Msg == "" {
+		return e.Kind.Error()
 	}
 
-	return &ResponseError{
-		StatusCode: statusCode,
-		Message:    message,
+	return fmt.Sprintf("%v: %s", e.Kind, e.Msg)
+}
+
+func (e LastfmError) Unwrap() error {
+	return e.Kind
+}
+
+func NewLastfmError(kind error, msg string) LastfmError {
+	return LastfmError{
+		Kind: kind,
+		Msg:  msg,
 	}
+}
+
+func ServerError(err error) error {
+	return NewLastfmError(ErrServer, err.Error())
+}
+
+func InvalidResponse(err error) error {
+	return NewLastfmError(ErrInvalidResponse, err.Error())
+}
+
+func UnknownCode(code ErrorCode, msg string) error {
+	return NewLastfmError(ErrUnknownCode, fmt.Sprintf("code=%d msg=%s", code, msg))
 }

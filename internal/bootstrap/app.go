@@ -6,6 +6,7 @@ import (
 	"github.com/skylissh/melodihub/internal/carousel"
 	"github.com/skylissh/melodihub/internal/core"
 	"github.com/skylissh/melodihub/internal/search"
+	"github.com/skylissh/melodihub/internal/validator"
 )
 
 type App struct {
@@ -16,12 +17,12 @@ type App struct {
 
 type Config struct {
 	Env         *core.Env
-	Providers   *Providers
 	CacheClient *cache.Client
 }
 
 func NewApp(cfg *Config) *App {
-	providers := NewProviders(cfg.Env)
+	validator := validator.New()
+	providers := NewProviders(cfg.Env, validator)
 
 	searchFeature := search.NewFeature(
 		&search.Options{
@@ -33,7 +34,7 @@ func NewApp(cfg *Config) *App {
 	carouselFeature := carousel.NewFeature(
 		&carousel.Options{
 			CacheClient:  cfg.CacheClient,
-			GeoClient:    cfg.Providers.Lastfm.Geo,
+			GeoClient:    providers.Lastfm.Geo,
 			SearchClient: providers.Deezer.Search,
 		},
 	)
