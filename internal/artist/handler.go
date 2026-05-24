@@ -27,6 +27,9 @@ func NewHandler(service *Service) *Handler {
 //	@Param			id	path		string	true	"Artist ID (e.g., deezer:123)"
 //	@Success		200	{object}	DetailResponse
 //	@Failure		400	{object}	domain.APIError
+//	@Failure		404	{object}	domain.APIError
+//	@Failure		429	{object}	domain.APIError
+//	@Failure		502	{object}	domain.APIError
 //	@Failure		500	{object}	domain.APIError
 //	@Router			/artist/{id} [get]
 func (h *Handler) GetArtist(c *echo.Context) error {
