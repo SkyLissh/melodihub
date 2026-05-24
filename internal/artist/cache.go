@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/skylissh/melodihub/internal/cache"
+	"github.com/skylissh/melodihub/internal/domain"
 )
 
 type Cache struct {
@@ -15,9 +16,9 @@ func NewCache(client *cache.Client) *Cache {
 	return &Cache{client: client}
 }
 
-func (c *Cache) Get(ctx context.Context, id string) (*Detail, bool) {
+func (c *Cache) Get(ctx context.Context, id domain.ID) (*DetailResponse, bool) {
 	key := fmt.Sprintf("artist:%s", id)
-	artist, err := cache.GetJSON[Detail](ctx, c.client, key)
+	artist, err := cache.GetJSON[DetailResponse](ctx, c.client, key)
 	if err != nil {
 		return nil, false
 	}
@@ -25,7 +26,7 @@ func (c *Cache) Get(ctx context.Context, id string) (*Detail, bool) {
 	return &artist, true
 }
 
-func (c *Cache) Set(ctx context.Context, id string, artist *Detail) bool {
+func (c *Cache) Set(ctx context.Context, id domain.ID, artist *DetailResponse) bool {
 	key := fmt.Sprintf("artist:%s", id)
 	if err := cache.SetJSON(ctx, c.client, key, artist, cache.DefaultTTL); err != nil {
 		return false

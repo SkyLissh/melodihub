@@ -9,25 +9,25 @@ type ErrorResponse struct {
 func (e ErrorResponse) ToError() error {
 	switch e.Code {
 	case QuoteExceededCode:
-		return ErrQuotaExceeded
+		return DeezerError{Kind: ErrQuotaExceeded, Msg: e.Message}
 	case ItemsLimitExceededCode:
-		return ErrItemsLimit
+		return DeezerError{Kind: ErrItemsLimit, Msg: e.Message}
 	case PermissionCode:
-		return ErrPermission
+		return DeezerError{Kind: ErrPermission, Msg: e.Message}
 	case TokenInvalidCode:
-		return ErrTokenInvalid
+		return DeezerError{Kind: ErrTokenInvalid, Msg: e.Message}
 	case ParameterInvalidCode:
-		return ErrInvalidParameter
+		return DeezerError{Kind: ErrInvalidParameter, Msg: e.Message}
 	case ParameterMissingCode:
-		return ErrParameterMissing
+		return DeezerError{Kind: ErrParameterMissing, Msg: e.Message}
 	case QueryInvalidCode:
-		return ErrQueryInvalid
+		return DeezerError{Kind: ErrQueryInvalid, Msg: e.Message}
 	case ServiceBusyCode:
-		return ErrServiceBusy
+		return DeezerError{Kind: ErrServiceBusy, Msg: e.Message}
 	case DataNotFoundCode:
-		return ErrNotFound
+		return DeezerError{Kind: ErrNotFound, Msg: e.Message}
 	case AccountNotAllowedCode:
-		return ErrAccountNotAllowed
+		return DeezerError{Kind: ErrAccountNotAllowed, Msg: e.Message}
 	default:
 		return UnknownCode(e.Code, e.Kind, e.Message)
 	}

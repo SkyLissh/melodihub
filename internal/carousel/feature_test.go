@@ -71,7 +71,7 @@ func (f *fakeCarouselSearchClient) Find(
 
 func TestHandlerGetCarouselsMapsLastfmInvalidParameterToInvalidParam(t *testing.T) {
 	apiErr, status := getCarouselErrorResponse(t, &fakeGeoClient{
-		artistErr: lastfm.ErrInvalidParameter,
+		artistErr: lastfm.NewLastfmError(lastfm.ErrInvalidParameter, ""),
 	})
 
 	assert.Equal(t, http.StatusBadRequest, status)
@@ -82,7 +82,7 @@ func TestHandlerGetCarouselsMapsLastfmInvalidParameterToInvalidParam(t *testing.
 
 func TestHandlerGetCarouselsMapsLastfmRateLimit(t *testing.T) {
 	apiErr, status := getCarouselErrorResponse(t, &fakeGeoClient{
-		artistErr: lastfm.ErrRateLimited,
+		artistErr: lastfm.NewLastfmError(lastfm.ErrRateLimited, ""),
 	})
 
 	assert.Equal(t, http.StatusTooManyRequests, status)
@@ -93,7 +93,7 @@ func TestHandlerGetCarouselsMapsLastfmRateLimit(t *testing.T) {
 
 func TestHandlerGetCarouselsMapsLastfmProviderUnavailable(t *testing.T) {
 	apiErr, status := getCarouselErrorResponse(t, &fakeGeoClient{
-		artistErr: lastfm.ErrServiceUnavailable,
+		artistErr: lastfm.NewLastfmError(lastfm.ErrServiceUnavailable, ""),
 	})
 
 	assert.Equal(t, http.StatusBadGateway, status)
@@ -124,7 +124,7 @@ func TestHandlerGetCarouselsSkipsInvalidDeezerItemErrors(t *testing.T) {
 				"good artist": {testDeezerTrack("Good Artist", "Good Song", 101)},
 			},
 			errs: map[string]error{
-				"bad artist": deezer.ErrQueryInvalid,
+				"bad artist": deezer.DeezerError{Kind: deezer.ErrQueryInvalid},
 			},
 		},
 		nil,
@@ -154,7 +154,7 @@ func TestHandlerGetCarouselsMapsFatalDeezerErrors(t *testing.T) {
 		},
 		&fakeCarouselSearchClient{
 			errs: map[string]error{
-				"artist": deezer.ErrServiceBusy,
+				"artist": deezer.DeezerError{Kind: deezer.ErrServiceBusy},
 			},
 		},
 		nil,

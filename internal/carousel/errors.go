@@ -9,68 +9,41 @@ import (
 )
 
 func CarouselErrorFromLastfmError(err error) error {
-	switch {
-	case errors.Is(err, lastfm.ErrInvalidParameter),
-		errors.Is(err, lastfm.ErrInvalidResource):
-		return domain.InvalidParam(err)
-	case errors.Is(err, lastfm.ErrRateLimited),
-		errors.Is(err, lastfm.ErrTooManyRequests):
-		return domain.RateLimited(domain.ProviderLastFM, err)
-	case errors.Is(err, lastfm.ErrInvalidService),
-		errors.Is(err, lastfm.ErrInvalidMethod),
-		errors.Is(err, lastfm.ErrAuthFailed),
-		errors.Is(err, lastfm.ErrInvalidFormat),
-		errors.Is(err, lastfm.ErrBadAuthToken),
-		errors.Is(err, lastfm.ErrOperationFailed),
-		errors.Is(err, lastfm.ErrInvalidSessionKey),
-		errors.Is(err, lastfm.ErrInvalidSignature),
-		errors.Is(err, lastfm.ErrTemporaryServerIssues),
-		errors.Is(err, lastfm.ErrInvalidUsername),
-		errors.Is(err, lastfm.ErrInvalidTimestamp),
-		errors.Is(err, lastfm.ErrDeletedAPIKey),
-		errors.Is(err, lastfm.ErrNotEnoughContent),
-		errors.Is(err, lastfm.ErrServiceUnavailable),
-		errors.Is(err, lastfm.ErrUserRequired),
-		errors.Is(err, lastfm.ErrSubsonicServerRequired),
-		errors.Is(err, lastfm.ErrLegacyMethodDisabled),
-		errors.Is(err, lastfm.ErrBadAccountScrobble),
-		errors.Is(err, lastfm.ErrNonExistentError),
-		errors.Is(err, lastfm.ErrRegistrationDisabled),
-		errors.Is(err, lastfm.ErrAPIKeyPermissionDenied),
-		errors.Is(err, lastfm.ErrSuspendedAPIKey),
-		errors.Is(err, lastfm.ErrOffline),
-		errors.Is(err, lastfm.ErrInvalidResponse),
-		errors.Is(err, lastfm.ErrServer),
-		errors.Is(err, lastfm.ErrUnknownCode):
-		return domain.ProviderUnavailable(domain.ProviderLastFM, err)
-	default:
-		return domain.Internal(err)
+	var lastfmErr lastfm.LastfmError
+	if errors.As(err, &lastfmErr) {
+		switch {
+		case errors.Is(lastfmErr.Kind, lastfm.ErrInvalidParameter),
+			errors.Is(lastfmErr.Kind, lastfm.ErrInvalidResource):
+			return domain.InvalidParam(err)
+		case errors.Is(lastfmErr.Kind, lastfm.ErrRateLimited),
+			errors.Is(lastfmErr.Kind, lastfm.ErrTooManyRequests):
+			return domain.RateLimited(domain.ProviderLastFM, err)
+		default:
+			return domain.ProviderUnavailable(domain.ProviderLastFM, err)
+		}
 	}
+	return domain.Internal(err)
 }
 
 func CarouselErrorFromDeezerError(err error) error {
-	switch {
-	case shouldSkipCarouselItemFromDeezerError(err):
-		return nil
-	case errors.Is(err, deezer.ErrQuotaExceeded),
-		errors.Is(err, deezer.ErrItemsLimit):
-		return domain.RateLimited(domain.ProviderDeezer, err)
-	case errors.Is(err, deezer.ErrPermission),
-		errors.Is(err, deezer.ErrTokenInvalid),
-		errors.Is(err, deezer.ErrServiceBusy),
-		errors.Is(err, deezer.ErrAccountNotAllowed),
-		errors.Is(err, deezer.ErrInvalidResponse),
-		errors.Is(err, deezer.ErrServer),
-		errors.Is(err, deezer.ErrUnknownCode):
-		return domain.ProviderUnavailable(domain.ProviderDeezer, err)
-	default:
-		return domain.Internal(err)
+	var deezerErr deezer.DeezerError
+	if errors.As(err, &deezerErr) {
+		switch {
+		case shouldSkipCarouselItemFromDeezerKind(deezerErr.Kind):
+			return nil
+		case errors.Is(deezerErr.Kind, deezer.ErrQuotaExceeded),
+			errors.Is(deezerErr.Kind, deezer.ErrItemsLimit):
+			return domain.RateLimited(domain.ProviderDeezer, err)
+		default:
+			return domain.ProviderUnavailable(domain.ProviderDeezer, err)
+		}
 	}
+	return domain.Internal(err)
 }
 
-func shouldSkipCarouselItemFromDeezerError(err error) bool {
-	return errors.Is(err, deezer.ErrParameterMissing) ||
-		errors.Is(err, deezer.ErrInvalidParameter) ||
-		errors.Is(err, deezer.ErrQueryInvalid) ||
-		errors.Is(err, deezer.ErrNotFound)
+func shouldSkipCarouselItemFromDeezerKind(kind error) bool {
+	return errors.Is(kind, deezer.ErrParameterMissing) ||
+		errors.Is(kind, deezer.ErrInvalidParameter) ||
+		errors.Is(kind, deezer.ErrQueryInvalid) ||
+		errors.Is(kind, deezer.ErrNotFound)
 }

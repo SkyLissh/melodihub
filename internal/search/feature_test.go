@@ -131,7 +131,7 @@ func TestHandlerGetSearchMapsDeezerInvalidQueryToInvalidParam(t *testing.T) {
 }
 
 func TestHandlerGetSearchMapsDeezerNotFoundToNotFound(t *testing.T) {
-	apiErr, status := getSearchErrorResponse(t, deezer.ErrNotFound)
+	apiErr, status := getSearchErrorResponse(t, deezer.DeezerError{Kind: deezer.ErrNotFound})
 
 	assert.Equal(t, http.StatusNotFound, status)
 	assert.Equal(t, domain.CodeNotFound, apiErr.Code)
@@ -141,8 +141,8 @@ func TestHandlerGetSearchMapsDeezerNotFoundToNotFound(t *testing.T) {
 
 func TestHandlerGetSearchMapsDeezerRateLimitedErrors(t *testing.T) {
 	tests := []error{
-		deezer.ErrQuotaExceeded,
-		deezer.ErrItemsLimit,
+		deezer.DeezerError{Kind: deezer.ErrQuotaExceeded},
+		deezer.DeezerError{Kind: deezer.ErrItemsLimit},
 	}
 
 	for _, providerErr := range tests {
@@ -159,10 +159,10 @@ func TestHandlerGetSearchMapsDeezerRateLimitedErrors(t *testing.T) {
 
 func TestHandlerGetSearchMapsDeezerProviderUnavailableErrors(t *testing.T) {
 	tests := []error{
-		deezer.ErrServiceBusy,
-		deezer.ErrInvalidResponse,
-		deezer.ErrServer,
-		deezer.ErrUnknownCode,
+		deezer.DeezerError{Kind: deezer.ErrServiceBusy},
+		deezer.DeezerError{Kind: deezer.ErrInvalidResponse},
+		deezer.DeezerError{Kind: deezer.ErrServer},
+		deezer.DeezerError{Kind: deezer.ErrUnknownCode},
 	}
 
 	for _, providerErr := range tests {

@@ -35,7 +35,11 @@ func TestErrorResponseToErrorMapsEveryKnownCodeToSemanticError(t *testing.T) {
 			}.ToError()
 
 			assert.ErrorIs(t, err, tt.err)
-			assert.Equal(t, tt.err, err)
+
+		var deezerErr DeezerError
+		require.ErrorAs(t, err, &deezerErr)
+		assert.Equal(t, tt.err, deezerErr.Kind)
+		assert.Equal(t, "provider message", deezerErr.Msg)
 		})
 	}
 }
