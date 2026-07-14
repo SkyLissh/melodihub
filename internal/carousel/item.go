@@ -6,25 +6,22 @@ import (
 )
 
 type ArtistSummary struct {
-	id     domain.ID
-	kind   domain.InfoType
-	name   string
-	images []domain.Image
+	id   domain.ID
+	kind domain.InfoType
+	name string
 }
 
 type ArtistSummaryResponse struct {
-	ID     string          `json:"id" validate:"required"`
-	Type   domain.InfoType `json:"type" validate:"required"`
-	Name   string          `json:"name" validate:"required"`
-	Images []domain.Image  `json:"images"`
+	ID   string          `json:"id" validate:"required"`
+	Kind domain.InfoType `json:"kind" validate:"required"`
+	Name string          `json:"name" validate:"required"`
 }
 
 func ResponseFromArtistSummary(summary ArtistSummary) ArtistSummaryResponse {
 	return ArtistSummaryResponse{
-		ID:     summary.id.String(),
-		Type:   summary.kind,
-		Name:   summary.name,
-		Images: summary.images,
+		ID:   summary.id.String(),
+		Kind: summary.kind,
+		Name: summary.name,
 	}
 }
 
@@ -62,16 +59,27 @@ func TopTrackFromDeezer(track deezer.Track) (Item, error) {
 	if err != nil {
 		return Item{}, err
 	}
+
+	artistID, err := domain.NewDeezerID(track.Artist.ID)
+	if err != nil {
+		return Item{}, err
+	}
+
 	return Item{
 		kind:   domain.TrackType,
 		id:     id,
 		name:   track.Title,
 		images: []domain.Image{{URL: track.Album.Cover}},
+		artists: []ArtistSummary{{
+			id:   artistID,
+			kind: domain.ArtistType,
+			name: track.Artist.Name,
+		}},
 	}, nil
 }
 
 type ItemResponse struct {
-	Type    domain.InfoType         `json:"type"`
+	Kind    domain.InfoType         `json:"kind"`
 	ID      string                  `json:"id"`
 	Name    string                  `json:"name"`
 	Images  []domain.Image          `json:"images,omitempty"`
@@ -81,7 +89,7 @@ type ItemResponse struct {
 func ResponseFromItem(item Item) ItemResponse {
 	return ItemResponse{
 		ID:      item.id.String(),
-		Type:    item.kind,
+		Kind:    item.kind,
 		Name:    item.name,
 		Images:  item.images,
 		Artists: ResponseFromArtistSummaries(item.artists),

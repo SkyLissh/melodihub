@@ -7,7 +7,7 @@ import (
 
 type TopTrackResponse struct {
 	ID        string          `json:"id" validate:"required"`
-	Kind      domain.InfoType `json:"type" validate:"required"`
+	Kind      domain.InfoType `json:"kind" validate:"required"`
 	Title     string          `json:"title" validate:"required"`
 	Images    []domain.Image  `json:"images"`
 	Duration  int             `json:"duration" validate:"min=1"`

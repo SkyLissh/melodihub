@@ -7,7 +7,7 @@ import (
 
 type TopAlbumResponse struct {
 	ID     string          `json:"id" validate:"required"`
-	Type   domain.InfoType `json:"type" validate:"required"`
+	Kind   domain.InfoType `json:"kind" validate:"required"`
 	Title  string          `json:"title" validate:"required"`
 	Images []domain.Image  `json:"images"`
 }
@@ -15,7 +15,7 @@ type TopAlbumResponse struct {
 func ResponseFromTopAlbum(album *TopAlbum) TopAlbumResponse {
 	return TopAlbumResponse{
 		ID:     album.ID.String(),
-		Type:   album.Type,
+		Kind:   album.Kind,
 		Title:  album.Title,
 		Images: album.Images,
 	}
@@ -31,7 +31,7 @@ func ResponseFromTopAlbums(albums []TopAlbum) []TopAlbumResponse {
 
 type TopAlbum struct {
 	ID     domain.ID
-	Type   domain.InfoType
+	Kind   domain.InfoType
 	Title  string
 	Images []domain.Image
 }
@@ -43,7 +43,7 @@ func TopAlbumFromDeezerAlbum(source *deezer.Album) (TopAlbum, error) {
 	}
 	return TopAlbum{
 		ID:     id,
-		Type:   domain.AlbumType,
+		Kind:   domain.AlbumType,
 		Title:  source.Title,
 		Images: []domain.Image{{URL: source.Cover}},
 	}, nil

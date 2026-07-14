@@ -7,7 +7,7 @@ import (
 
 type SummaryResponse struct {
 	ID     string          `json:"id" validate:"required"`
-	Type   domain.InfoType `json:"type" validate:"required"`
+	Kind   domain.InfoType `json:"kind" validate:"required"`
 	Name   string          `json:"name" validate:"required"`
 	Images []domain.Image  `json:"images"`
 }
@@ -15,7 +15,7 @@ type SummaryResponse struct {
 func ResponseFromSummary(summary *Summary) SummaryResponse {
 	return SummaryResponse{
 		ID:     summary.ID.String(),
-		Type:   summary.Type,
+		Kind:   summary.Kind,
 		Name:   summary.Name,
 		Images: summary.Images,
 	}
@@ -31,7 +31,7 @@ func ResponseFromSummaries(summaries []Summary) []SummaryResponse {
 
 type Summary struct {
 	ID     domain.ID
-	Type   domain.InfoType
+	Kind   domain.InfoType
 	Name   string
 	Images []domain.Image
 }
@@ -43,7 +43,7 @@ func SummaryFromDeezer(source deezer.Artist) (Summary, error) {
 	}
 	return Summary{
 		ID:     id,
-		Type:   domain.ArtistType,
+		Kind:   domain.ArtistType,
 		Name:   source.Name,
 		Images: []domain.Image{{URL: source.Picture}},
 	}, nil

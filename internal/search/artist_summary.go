@@ -10,7 +10,7 @@ import (
 
 type ArtistSummaryResponse struct {
 	ID     string          `json:"id" validate:"required"`
-	Type   domain.InfoType `json:"type" validate:"required"`
+	Kind   domain.InfoType `json:"kind" validate:"required"`
 	Name   string          `json:"name" validate:"required"`
 	Images []domain.Image  `json:"images"`
 	Match  int             `json:"match"`
@@ -25,7 +25,7 @@ func ArtistResponseFromSummary(summary ArtistSummary) (ArtistSummaryResponse, er
 
 	return ArtistSummaryResponse{
 		ID:     summary.id.String(),
-		Type:   summary.kind,
+		Kind:   summary.kind,
 		Name:   summary.name,
 		Images: summary.images,
 		Match:  *summary.match,

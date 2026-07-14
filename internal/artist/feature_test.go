@@ -428,7 +428,7 @@ func TestHandlerGetArtistReturnsSuccessResponse(t *testing.T) {
 	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &response))
 
 	assert.Equal(t, "deezer:27", response.ID)
-	assert.Equal(t, domain.ArtistType, response.Type)
+	assert.Equal(t, domain.ArtistType, response.Kind)
 	assert.Equal(t, "Muse", response.Name)
 	assert.Equal(t, 3000000, response.Listeners)
 	assert.Equal(t, "Muse are an English rock band", response.Bio)

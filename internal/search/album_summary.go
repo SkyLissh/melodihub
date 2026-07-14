@@ -10,7 +10,7 @@ import (
 
 type AlbumSummaryResponse struct {
 	ID      string                  `json:"id" validate:"required"`
-	Type    domain.InfoType         `json:"type" validate:"required"`
+	Kind    domain.InfoType         `json:"kind" validate:"required"`
 	Title   string                  `json:"name" validate:"required"`
 	Images  []domain.Image          `json:"images"`
 	Artists []ArtistSummaryResponse `json:"artists"`
@@ -39,7 +39,7 @@ func AlbumResponseFromSummary(summary AlbumSummary) (AlbumSummaryResponse, error
 
 	return AlbumSummaryResponse{
 		ID:      summary.id.String(),
-		Type:    summary.kind,
+		Kind:    summary.kind,
 		Title:   summary.title,
 		Images:  summary.images,
 		Artists: artists,

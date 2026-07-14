@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  melodihub:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: melodihub
+    ports:
+      - "3000:3000"
+    environment:
+      # - LASTFM_API_KEY=${LASTFM_API_KEY}
+      - LASTFM_API_KEY=91ad62f7c5ee4c729df41caafd614f94
+      - VALKEY_ADDR=valkey:6379
+    depends_on:
+      - valkey
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  valkey:
+    image: valkey/valkey:latest
+    container_name: melodihub-valkey
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s

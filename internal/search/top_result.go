@@ -8,7 +8,7 @@ import (
 
 type TopResultResponse struct {
 	ID      string                  `json:"id" validate:"required"`
-	Type    domain.InfoType         `json:"type" validate:"required"`
+	Kind    domain.InfoType         `json:"kind" validate:"required"`
 	Name    string                  `json:"name" validate:"required"`
 	Images  []domain.Image          `json:"images,omitempty"`
 	Match   int                     `json:"match,omitempty"`
@@ -37,7 +37,7 @@ func TopResultResponseFromSummary(summary TopResult) (TopResultResponse, error) 
 
 	return TopResultResponse{
 		ID:      summary.id.String(),
-		Type:    summary.kind,
+		Kind:    summary.kind,
 		Name:    summary.name,
 		Images:  summary.images,
 		Match:   *summary.match,
