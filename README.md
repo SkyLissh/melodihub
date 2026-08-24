@@ -51,7 +51,3 @@ Requires Go 1.25+. Swagger UI served at `/swagger`.
 - Provider abstraction and feature caching
 - Swagger/OpenAPI-first APIs
 - Tested features and clean bootstrapping
-
----
-
-*Built by [Alisson "SkyLissh" Hernandez] — Go backend, API design, and system architecture. This is a personal portfolio project.*
